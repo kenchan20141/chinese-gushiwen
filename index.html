@@ -829,13 +829,18 @@
         return lines.map(line => `<p>${line}</p>`).join('');
     }
 
-    function renderCategories() {
+  function renderCategories() {
         const grid = document.getElementById('dynasty-grid');
         grid.innerHTML = '';
         const sorted = Object.keys(db).sort((a, b) => (dynastyOrder.indexOf(a) !== -1 ? dynastyOrder.indexOf(a) : 999) - (dynastyOrder.indexOf(b) !== -1 ? dynastyOrder.indexOf(b) : 999));
 
+        // 建立要隱藏的朝代清單
+        const hiddenDynasties = ["近代", "現代", "未知"];
+
         for (let dyn of sorted) {
-            if (db[dyn].length === 0) continue; 
+            // 如果該朝代沒有文章，或者是屬於要隱藏的朝代，則跳過不顯示
+            if (db[dyn].length === 0 || hiddenDynasties.includes(dyn)) continue; 
+            
             const btn = document.createElement('div');
             btn.className = 'card-btn';
             btn.innerHTML = `<h3>${dyn}</h3><p>長篇 ${db[dyn].length} 卷</p>`;
@@ -843,7 +848,6 @@
             grid.appendChild(btn);
         }
     }
-
     function generateDifficultyAndSort(poemsArray) {
         poemsArray.forEach(p => {
             p._rawLength = cleanClassicalContent(safeConvert(p.content || "")).length;
