@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文言特訓</title>
+    <!-- 引入 OpenCC 繁簡轉換套件 -->
+    <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
+    <style>
+        :root {
+            --paper-bg: #f4ecd8;         /* 宣紙米黃 */
+            --ink-black: #2b2b2b;        /* 濃墨黑 */
+            --ink-gray: #5c5c5c;         /* 淡墨灰 */
+            --cinnabar-red: #a73322;     /* 朱砂紅 */
+            --border-line: #4a4a4a;      /* 烏絲欄框線 */
+            --morandi-green: #7a8b79;    /* 莫蘭迪綠 */
+            --panel-bg: #faf4e3;         /* 抽屜底色 */
+            --font-book: "STFangsong", "FangSong", "Kaiti TC", "BiauKai", "TW-Kai", "Noto Serif TC", serif;
+            
+            /* 預設懸浮面板尺寸，將會被 LocalStorage 覆蓋 */
+            --panel-width: 450px;
+            --panel-height: 40vh;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: var(--font-book);
+            background-color: var(--paper-bg);
+            color: var(--ink-black);
+            background-image: 
+                linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow-x: hidden;
+            overscroll-behavior: none;
+        }
+
+        .book-container {
+            max-width: 900px; margin: 30px auto; 
+            background: #faf4e3;
+            border: 1px solid var(--border-line);
+            outline: 3px solid var(--border-line);
+            outline-offset: -8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            min-height: 90vh; position: relative;
+            animation: unfoldScroll 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes unfoldScroll {
+            0% { transform: scaleX(0.01); opacity: 0; }
+            50% { transform: scaleX(1); opacity: 1; }
+            100% { transform: scaleX(1); opacity: 1; }
+        }
+
+        .book-page { padding: 40px 50px; animation: inkFadeIn 1.2s ease 0.4s both; }
+
+        @keyframes inkFadeIn {
+            0% { opacity: 0; filter: blur(4px); transform: translateY(10px); }
+            100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+        }
+
+        .view { display: none; }
+        .view.active { display: block; animation: inkFadeIn 0.5s ease both; }
+
+        header {
+            position: relative;
+            text-align: center; border-bottom: 2px solid var(--border-line);
+            padding-bottom: 15px; margin-bottom: 25px;
+        }
+
+        .header-actions {
+            position: absolute; right: 10px; bottom: 15px;
+            display: flex; gap: 12px; align-items: center;
+        }
+
+        .header-btn {
+            background: transparent; border: none; cursor: pointer;
+            transition: transform 0.3s; padding: 0; display: flex;
+        }
+
+        .header-btn:hover { transform: scale(1.15); }
+
+        h1.app-title {
+            color: var(--ink-black); font-size: 2.8em; letter-spacing: 8px;
+            margin: 0 0 10px 0; font-weight: 700;
+        }
+
+        .stamp {
+            display: inline-block; color: var(--cinnabar-red); border: 2px solid var(--cinnabar-red);
+            padding: 2px 8px; font-size: 0.9em; font-weight: 700; border-radius: 4px;
+            transform: rotate(-3deg); opacity: 0.85; letter-spacing: 2px; margin-left: 10px;
+        }
+
+        .loading-container { text-align: center; margin-top: 20vh; }
+        .yin-yang {
+            width: 60px; height: 60px; margin: 0 auto 20px auto; border-radius: 50%;
+            background: linear-gradient(to right, var(--ink-black) 50%, transparent 50%);
+            border: 2px solid var(--ink-black); animation: spin 1.5s linear infinite;
+        }
+        .yin-yang::before, .yin-yang::after { content: ""; display: block; width: 30px; height: 30px; border-radius: 50%; margin-left: 15px; }
+        .yin-yang::before { background: var(--ink-black); border: 8px solid var(--paper-bg); box-sizing: border-box; }
+        .yin-yang::after { background: var(--paper-bg); border: 8px solid var(--ink-black); box-sizing: border-box; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; margin-top: 30px; }
+        .card-btn {
+            background: transparent; border: 1px solid var(--ink-gray); padding: 20px 10px;
+            text-align: center; cursor: pointer; position: relative; transition: all 0.3s;
+        }
+        .card-btn::before {
+            content: ""; position: absolute; top: 4px; left: 4px; right: 4px; bottom: 4px;
+            border: 1px dashed var(--ink-gray); opacity: 0.5; transition: 0.3s;
+        }
+        .card-btn:hover { background: var(--ink-black); color: var(--paper-bg); border-color: var(--ink-black); transform: translateY(-3px); }
+        .card-btn:hover::before { border-color: var(--paper-bg); opacity: 0.8; }
+        .card-btn h3 { margin: 0 0 8px 0; font-size: 1.5em; letter-spacing: 2px; }
+        .card-btn p { margin: 0; font-size: 0.9em; opacity: 0.8; }
+
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        
+        .icon-btn {
+            background: transparent; color: var(--ink-black); border: 1px solid var(--ink-black);
+            padding: 8px 14px; cursor: pointer; border-radius: 4px;
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: 0.3s; gap: 6px; font-family: inherit; font-size: 1.05em; letter-spacing: 1px;
+        }
+        .icon-btn:hover { background: var(--ink-black); color: var(--paper-bg); }
+        .icon-btn svg { width: 20px; height: 20px; }
+        .icon-btn.btn-danger { border-color: var(--cinnabar-red); color: var(--cinnabar-red); }
+        .icon-btn.btn-danger:hover { background: var(--cinnabar-red); color: var(--paper-bg); }
+
+        /* 作者與難度篩選列 */
+        .filter-row { 
+            display: flex; overflow-x: auto; gap: 12px; padding-bottom: 12px; margin-bottom: 15px; 
+            border-bottom: 1px dashed var(--ink-gray); 
+        }
+        .filter-row::-webkit-scrollbar { height: 6px; }
+        .filter-row::-webkit-scrollbar-thumb { background: var(--ink-gray); border-radius: 4px; }
+        
+        .author-tag {
+            white-space: nowrap; padding: 4px 12px; color: var(--ink-black);
+            border-bottom: 2px solid transparent; cursor: pointer; font-size: 1.1em; transition: 0.2s;
+        }
+        .author-tag.active { border-bottom-color: var(--cinnabar-red); color: var(--cinnabar-red); font-weight: bold; }
+
+        /* 難度標籤專屬樣式 (莫蘭迪色系) */
+        .diff-tag {
+            white-space: nowrap; padding: 6px 14px; color: var(--ink-black);
+            cursor: pointer; font-size: 1.05em; font-weight: bold; transition: 0.2s;
+            border-radius: 6px; opacity: 0.5; border: 1px solid transparent;
+        }
+        .diff-tag.active { opacity: 1; border-color: currentColor; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .diff-0 { background-color: #f0f0f0; color: #4a4a4a; }
+        .diff-0.active { background-color: #dcdcdc; border-color: #8c8c8c; }
+        .diff-1 { background-color: #e2e8df; color: #5c7054; }
+        .diff-1.active { background-color: #c5d1c0; border-color: #5c7054; }
+        .diff-2 { background-color: #e3e8eb; color: #586c7d; }
+        .diff-2.active { background-color: #c9d2d9; border-color: #586c7d; }
+        .diff-3 { background-color: #f1ede3; color: #8c7b56; }
+        .diff-3.active { background-color: #e2d9c4; border-color: #8c7b56; }
+        .diff-4 { background-color: #eee3e2; color: #8f5c57; }
+        .diff-4.active { background-color: #dec2bf; border-color: #8f5c57; }
+        .diff-5 { background-color: #e9e5e9; color: #726270; }
+        .diff-5.active { background-color: #d1cbd1; border-color: #726270; }
+
+        .search-bar { position: relative; margin-bottom: 15px; }
+        .search-bar svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-gray); }
+        .search-bar input {
+            width: 100%; padding: 12px 12px 12px 42px; border: 1px solid var(--border-line); background: transparent;
+            font-size: 1.2em; font-family: var(--font-book); color: var(--ink-black); box-sizing: border-box;
+        }
+        .search-bar input:focus { outline: none; border-color: var(--cinnabar-red); background: rgba(255,255,255,0.3); }
+
+        .poem-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+            gap: 20px; 
+            padding: 10px 5px; 
+            margin-top: 15px;
+        }
+        .poem-card {
+            background: #faf7ee;
+            border: 1px solid var(--border-line);
+            padding: 22px;
+            position: relative;
+            box-shadow: 2px 4px 10px rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .poem-card.diff-border-1 { border-left: 5px solid #8a9a83; }
+        .poem-card.diff-border-2 { border-left: 5px solid #6b7e8c; }
+        .poem-card.diff-border-3 { border-left: 5px solid #bda87b; }
+        .poem-card.diff-border-4 { border-left: 5px solid #a87873; }
+        .poem-card.diff-border-5 { border-left: 5px solid #806f7e; }
+
+        .poem-card:hover { transform: translateY(-4px); box-shadow: 4px 10px 18px rgba(0,0,0,0.08); }
+        
+        .pc-title { font-size: 1.45em; font-weight: bold; margin-bottom: 8px; color: var(--ink-black); letter-spacing: 1px; }
+        .pc-snippet {
+            font-size: 1.05em; color: var(--ink-gray); margin-bottom: 20px; line-height: 1.5;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .pc-meta {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 1.05em; color: var(--ink-gray); border-top: 1px dashed rgba(92,92,92,0.3); padding-top: 12px;
+        }
+        .diff-badge { font-size: 0.85em; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
+
+        .article-wrap { padding-bottom: 80px; transition: padding 0.3s ease; }
+        .p-title { text-align: center; font-size: 2.4em; margin-bottom: 5px; font-weight: bold; letter-spacing: 3px; }
+        .p-author { text-align: center; color: var(--ink-gray); margin-bottom: 20px; font-size: 1.2em; letter-spacing: 2px; }
+        
+        .progress-wrapper { max-width: 300px; margin: 15px auto 0 auto; display: none; }
+        .progress-bar-bg { background: rgba(0,0,0,0.1); border-radius: 10px; height: 6px; overflow: hidden; position: relative; }
+        .progress-bar-fill { background: var(--cinnabar-red); height: 100%; width: 0%; transition: width 0.2s ease; }
+
+        .content-area { font-size: 1.45em; line-height: 1.8; margin-bottom: 30px; }
+        
+        /* 統一文字縮排與莫蘭迪段落顏色循環 */
+        .morandi-text p {
+            text-indent: 2em;
+            margin: 0 0 0.8em 0;
+            text-align: justify;
+            text-justify: inter-ideograph;
+            transition: color 0.3s ease;
+        }
+        
+        /* 段落顏色循環 (明顯且淡雅的莫蘭迪色系) */
+        .morandi-text p:nth-of-type(5n+1) { color: #2b2b2b; } /* 濃黑 */
+        .morandi-text p:nth-of-type(5n+2) { color: #3d7a60; } /* 竹青 (加深綠) */
+        .morandi-text p:nth-of-type(5n+3) { color: #3b6b96; } /* 藏青 (加深藍) */
+        .morandi-text p:nth-of-type(5n+4) { color: #9e4a41; } /* 胭脂 (加深紅) */
+        .morandi-text p:nth-of-type(5n+5) { color: #7a5885; } /* 檀灰 (加深紫) */
+
+        .fab-bar {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            background: var(--ink-black); padding: 10px 20px; border-radius: 40px;
+            display: flex; gap: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); z-index: 1000;
+            display: none;
+        }
+        .fab-bar .icon-btn {
+            border: none; color: #fff; background: transparent; padding: 6px 12px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.85em;
+        }
+        .fab-bar .icon-btn:hover { background: rgba(255,255,255,0.1); }
+        .fab-bar svg { width: 22px; height: 22px; }
+
+        .overlay-panel {
+            position: fixed; background: var(--panel-bg);
+            box-shadow: 0 0 25px rgba(0,0,0,0.2); z-index: 1001;
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex; flex-direction: column; overflow: hidden;
+            background-image: 
+                linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 25px; border-bottom: 2px solid var(--border-line); background: var(--panel-bg);
+        }
+        .panel-header h3 { margin: 0; font-size: 1.4em; letter-spacing: 2px; }
+        .panel-close { background: transparent; border: none; font-size: 1.5em; cursor: pointer; color: var(--ink-black); }
+        
+        .panel-body { padding: 25px; overflow-y: auto; flex: 1; font-size: 1.25em; line-height: 1.7; }
+
+        .remark-table { width: 100%; border-collapse: collapse; }
+        .remark-table th, .remark-table td { border: 1px solid var(--border-line); padding: 12px; text-align: left; vertical-align: top; }
+        .remark-table thead th { background: rgba(43,43,43,0.05); font-size: 1.1em; letter-spacing: 2px; }
+        .r-idx { width: 40px; text-align: center !important; font-weight: bold; color: var(--ink-black); font-size: 1.1em; }
+        .vocab-badge {
+            background-color: var(--morandi-green); color: #ffffff;
+            padding: 4px 10px; border-radius: 4px; font-weight: bold;
+            display: inline-block; letter-spacing: 1px;
+        }
+        .btn-vocab-save { background: none; border: none; cursor: pointer; transition: 0.2s; padding: 5px; border-radius: 50%; }
+        .btn-vocab-save:hover { background: rgba(0,0,0,0.05); transform: scale(1.1); }
+
+        .empty { color: var(--ink-gray); font-style: italic; text-align: center; padding: 20px; letter-spacing: 2px; }
+
+        /* 字詞庫 (Vocab Book) 卡片設計 */
+        .vocab-grid { display: grid; gap: 20px; grid-template-columns: 1fr; margin-top: 20px; }
+        .vocab-card {
+            background: #faf7ee; border: 1px solid var(--border-line);
+            border-left: 6px solid var(--morandi-green); padding: 20px;
+            border-radius: 4px; position: relative; box-shadow: 2px 4px 10px rgba(0,0,0,0.03);
+            transition: all 0.3s;
+        }
+        .vocab-card:hover { transform: translateY(-3px); box-shadow: 4px 8px 15px rgba(0,0,0,0.06); border-left-color: var(--cinnabar-red); }
+        .vocab-card .v-word { font-size: 1.4em; font-weight: bold; color: var(--cinnabar-red); margin-bottom: 10px; letter-spacing: 1px; }
+        .vocab-card .v-exp { font-size: 1.2em; color: var(--ink-black); margin-bottom: 15px; line-height: 1.6; text-align: justify; }
+        .vocab-card .v-source { font-size: 1em; color: var(--ink-gray); text-align: right; border-top: 1px dashed rgba(92,92,92,0.3); padding-top: 10px; font-style: italic; }
+        .vocab-card .v-del {
+            position: absolute; top: 15px; right: 15px; background: none; border: none; cursor: pointer; color: var(--ink-gray); transition: 0.2s; padding: 5px;
+        }
+        .vocab-card .v-del:hover { color: var(--cinnabar-red); transform: scale(1.1); }
+
+        /* 出題面板 Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); z-index: 3000;
+            display: none; justify-content: center; align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: var(--panel-bg); border: 2px solid var(--border-line);
+            border-radius: 6px; width: 90%; max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); overflow: hidden;
+            background-image: 
+                linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 20px; border-bottom: 1px dashed var(--border-line);
+        }
+        .modal-header h3 { margin: 0; font-size: 1.4em; letter-spacing: 2px; color: var(--ink-black); }
+        .modal-body { padding: 25px 20px; }
+        .quiz-option {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 18px; font-size: 1.25em; color: var(--ink-black);
+        }
+        .quiz-option input[type="number"] {
+            width: 55px; padding: 5px; text-align: center; border: 1px solid var(--border-line); 
+            border-radius: 4px; font-family: inherit; font-size: 1em; background: transparent;
+        }
+        .quiz-option input[type="number"]:focus { outline: none; border-color: var(--cinnabar-red); }
+        .quiz-option input[type="checkbox"] { width: 18px; height: 18px; margin-right: 12px; cursor: pointer; accent-color: var(--cinnabar-red); }
+        .modal-footer {
+            padding: 15px 20px; border-top: 1px dashed var(--border-line); text-align: right;
+            display: flex; justify-content: flex-end; gap: 12px; background: rgba(0,0,0,0.03);
+        }
+
+        /* 調整大小拖曳控制桿 */
+        .resizer-line {
+            position: absolute; background-color: var(--border-line); opacity: 0.3;
+            border-radius: 4px; transition: opacity 0.2s;
+        }
+        .panel-resizer:hover .resizer-line, .panel-resizer:active .resizer-line {
+            opacity: 0.8; background-color: var(--cinnabar-red);
+        }
+
+        @media (min-width: 850px) {
+            .overlay-panel {
+                top: 0; right: 0; bottom: 0; width: var(--panel-width);
+                border-left: 2px solid var(--border-line);
+                transform: translateX(100%);
+            }
+            .overlay-panel.open { transform: translateX(0); }
+            body.panel-open .book-container { 
+                transform: translateX(calc( -1 * (var(--panel-width) / 2 - 20px) )); 
+            }
+            .panel-resizer {
+                position: absolute; top: 0; left: -5px; bottom: 0; width: 10px; cursor: ew-resize; z-index: 1002;
+            }
+            .resizer-line { top: 50%; left: 4px; width: 4px; height: 40px; transform: translateY(-50%); }
+            .vocab-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 849px) {
+            .book-container { margin: 0; min-height: 100vh; outline: none; border: none; box-shadow: none; }
+            .book-page { padding: 20px 15px; }
+            h1.app-title { font-size: 2.2em; }
+            .content-area { font-size: 1.3em; }
+            
+            .overlay-panel {
+                bottom: 0; left: 0; right: 0; height: var(--panel-height);
+                border-top: 2px solid var(--border-line); border-radius: 15px 15px 0 0;
+                transform: translateY(100%);
+            }
+            .overlay-panel.open { transform: translateY(0); }
+            
+            body.panel-open .article-wrap { padding-bottom: calc(var(--panel-height) + 60px); }
+            
+            .fab-bar { bottom: 15px; width: 90%; justify-content: space-around; }
+            .remark-table th, .remark-table td { padding: 8px; }
+            
+            .panel-resizer {
+                position: absolute; top: -5px; left: 0; right: 0; height: 15px; cursor: ns-resize; z-index: 1002;
+            }
+            .resizer-line { top: 6px; left: 50%; width: 40px; height: 4px; transform: translateX(-50%); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="book-container">
+    <div class="book-page">
+        <header>
+            <h1 class="app-title">文言特訓<span class="stamp">神思</span></h1>
+            
+            <div class="header-actions">
+                <!-- 字詞庫按鈕 -->
+                <button class="header-btn" onclick="openVocabBook()" title="字詞庫 (生詞本)">
+                    <svg viewBox="0 0 24 24" width="28" height="28" stroke="var(--ink-gray)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                </button>
+                <!-- 我的最愛按鈕 -->
+                <button class="header-btn" onclick="openFavorites()" title="我的最愛">
+                    <svg viewBox="0 0 24 24" width="28" height="28" stroke="var(--cinnabar-red)" stroke-width="2" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <div id="view-loading" class="view active loading-container">
+            <div class="yin-yang"></div>
+            <h2>正在展卷查閱古籍</h2>
+            <p id="loading-text">洗鍊筆墨，萃取典籍，請稍候...</p>
+        </div>
+
+        <div id="view-categories" class="view">
+            <h2 style="text-align:center; letter-spacing: 4px; border-bottom: 1px solid #ccc; display:inline-block; margin: 0 auto; padding-bottom: 10px;">朝代卷宗</h2>
+            <div style="text-align:center;"><br></div>
+            <div id="dynasty-grid" class="grid"></div>
+        </div>
+
+        <div id="view-list" class="view">
+            <div class="toolbar">
+                <button class="icon-btn" onclick="showView('view-categories')" title="返回卷宗">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                <h2 id="list-title" style="margin:0; letter-spacing: 2px;"></h2>
+                <div style="width: 50px;"></div>
+            </div>
+            
+            <div id="diff-filter" class="filter-row"></div>
+            <div id="author-filter" class="filter-row"></div>
+            
+            <div class="search-bar">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="search-input" placeholder="輸入篇名或作者搜尋..." onkeyup="filterList()">
+            </div>
+            <div id="poem-list" class="poem-grid"></div>
+        </div>
+
+        <!-- 字詞庫視圖 -->
+        <div id="view-vocab" class="view">
+            <div class="toolbar">
+                <button class="icon-btn" onclick="showView('view-categories')" title="返回主頁">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                <h2 style="margin:0; letter-spacing: 4px;">字詞庫紀錄</h2>
+                <div style="width: 50px;"></div>
+            </div>
+            <div id="vocab-list" class="vocab-grid"></div>
+        </div>
+
+        <div id="view-detail" class="view">
+            <div class="toolbar" style="justify-content: space-between;">
+                <button class="icon-btn" onclick="closePoem()" title="返回清單">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> 
+                </button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <!-- AI 出題按鈕 -->
+                    <button class="icon-btn" onclick="openQuizModal()" title="AI 智能出題 (Gemini)">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                    <!-- 加入最愛按鈕 -->
+                    <button id="btn-toggle-fav" class="icon-btn" onclick="toggleCurrentFavorite()" title="加入/移除最愛" style="border: none; padding: 6px;"></button>
+                    <!-- 語音吟誦按鈕 -->
+                    <button id="btn-tts" class="icon-btn btn-danger" onclick="toggleTTS()" title="吟誦此卷">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        吟誦
+                    </button>
+                </div>
+            </div>
+            <div id="progress-wrapper" class="progress-wrapper"><div class="progress-bar-bg"><div id="progress-bar-fill" class="progress-bar-fill"></div></div></div>
+
+            <div class="article-wrap">
+                <div id="p-title" class="p-title"></div>
+                <div id="p-author" class="p-author"></div>
+                <div id="p-content-unified" class="content-area morandi-text"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="search-popup" onmousedown="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
+    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+</div>
+
+<div id="fab-bar" class="fab-bar">
+    <button class="icon-btn" onclick="openPanel('remark')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        注釋
+    </button>
+    <button class="icon-btn" onclick="openPanel('translation')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6"></path><path d="M4 14l6-6 2-3"></path><path d="M2 5h12"></path><path d="M7 2h1"></path><path d="M22 22l-5-10-5 10"></path><path d="M14 18h6"></path></svg>
+        譯文
+    </button>
+    <button class="icon-btn" onclick="openPanel('shangxi')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        賞析
+    </button>
+</div>
+
+<div id="overlay-panel" class="overlay-panel">
+    <div id="panel-resizer" class="panel-resizer"><div class="resizer-line"></div></div>
+    <div class="panel-header">
+        <h3 id="panel-title">資料夾</h3>
+        <button class="panel-close" onclick="closePanel()">×</button>
+    </div>
+    <div id="panel-body" class="panel-body"></div>
+</div>
+
+<!-- AI 出卷設定 Modal -->
+<div id="quiz-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>練習</h3>
+            <button class="panel-close" onclick="closeQuizModal()">×</button>
+        </div>
+        <div class="modal-body">
+         
+            <div class="quiz-option">
+                <label><input type="checkbox" id="chk-mc" checked> 多項選擇題 (MC)</label>
+                <div><input type="number" id="num-mc" value="5" min="0" max="20"> 題</div>
+            </div>
+            <div class="quiz-option">
+                <label><input type="checkbox" id="chk-trans" checked> 語譯題</label>
+                <div><input type="number" id="num-trans" value="3" min="0" max="10"> 題</div>
+            </div>
+            <div class="quiz-option">
+                <label><input type="checkbox" id="chk-qa" checked> 長問答</label>
+                <div><input type="number" id="num-qa" value="3" min="0" max="10"> 題</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="icon-btn" onclick="closeQuizModal()">取消</button>
+            <button class="icon-btn btn-danger" onclick="generateQuizPrompt()">出題</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dynastyOrder = ["先秦","秦代","漢代","兩漢","魏晉","南北朝","隋代","唐代","五代","宋代","金朝","遼代","元代","明代","清代","近代","現代","未知"];
+    const fileUrls = [
+        "guwen0-1000.json", "guwen1001-2000.json", "guwen2001-3000.json",
+        "guwen3001-4000.json", "guwen4001-5000.json", "guwen5001-6000.json",
+        "guwen6001-7000.json", "guwen7001-8000.json", "guwen8001-9000.json",
+        "guwen9001-10000.json"
+    ].map(name => `https://raw.githubusercontent.com/kenchan20141/chinese-gushiwen/master/guwen/${name}`);
+
+    const poetryTags = ["詩", "詞", "曲", "五言", "七言", "絕句", "律詩", "樂府", "古詩", "楚辭", "唐詩", "宋詞", "元曲", "辭賦", "詩經"];
+
+    let db = {}; 
+    let currentDynastyPoems = []; 
+    let currentActiveAuthor = "全部";
+    let currentActiveDifficulty = 0;
+    let currentPoem = null;
+    let converter = (text) => text;
+    
+    let favorites = JSON.parse(localStorage.getItem('guwen_favorites') || '[]');
+    let savedVocabs = JSON.parse(localStorage.getItem('guwen_vocabs') || '[]');
+
+    let cacheRemark = '';
+    let cacheTranslation = '';
+    let cacheShangxi = '';
+    let lastSelectedText = "";
+
+    let savedWidth = localStorage.getItem('panel-width') || '450px';
+    let savedHeight = localStorage.getItem('panel-height') || '40vh';
+    document.documentElement.style.setProperty('--panel-width', savedWidth);
+    document.documentElement.style.setProperty('--panel-height', savedHeight);
+
+    document.addEventListener("DOMContentLoaded", initApp);
+
+    async function initApp() {
+        initPanelResize();
+        try {
+            if (typeof OpenCC !== 'undefined') converter = OpenCC.Converter({ from: 'cn', to: 't' });
+            const responses = await Promise.all(fileUrls.map(url => fetch(url).catch(() => null)));
+            let allLines = [];
+            for (let res of responses) {
+                if (res && res.ok) allLines.push(...(await res.text()).split('\n'));
+            }
+
+            for (let line of allLines) {
+                line = line.trim();
+                if (!line) continue;
+                if (line.endsWith(',')) line = line.slice(0, -1);
+                line = line.replace(/\]",/g, '],');
+
+                try {
+                    const p = JSON.parse(line);
+                    
+                    if (!p.remark || typeof p.remark !== 'string' || p.remark.trim() === '') continue;
+                    
+                    let isPoem = false;
+                    if (p.type && Array.isArray(p.type)) {
+                        isPoem = p.type.some(tag => poetryTags.some(pt => tag.includes(pt)));
+                    }
+                    const titleCheck = safeConvert(p.title || "");
+                    if (titleCheck.endsWith("詩") || titleCheck.endsWith("詞") || titleCheck.endsWith("曲") || titleCheck.endsWith("歌") || titleCheck.endsWith("絕句")) {
+                        isPoem = true;
+                    }
+                    if (isPoem) continue; 
+
+                    let rawContent = cleanClassicalContent(safeConvert(p.content || "")).replace(/[\s\r\n]/g, '');
+                    if (rawContent.length <= 100) continue;
+
+                    let dyn = safeConvert(p.dynasty || "未知");
+                    if (!db[dyn]) db[dyn] = [];
+                    db[dyn].push(p);
+                } catch(e) {}
+            }
+            renderCategories();
+            showView('view-categories');
+        } catch (err) {
+            document.getElementById('loading-text').innerText = "載入失敗：" + err.message;
+        }
+    }
+
+    function removeBrackets(text) {
+        if (!text) return "";
+        let prev = "";
+        while (text !== prev) {
+            prev = text;
+            text = text.replace(/[（\(【\[][^）\)】\]]*[）\)】\]]/g, '');
+        }
+        return text.trim();
+    }
+
+    function initPanelResize() {
+        let isResizing = false;
+        let startY, startX, startHeight, startWidth;
+        const resizer = document.getElementById('panel-resizer');
+
+        resizer.addEventListener('mousedown', initDrag);
+        resizer.addEventListener('touchstart', initDrag, {passive: false});
+
+        function initDrag(e) {
+            e.preventDefault();
+            isResizing = true;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            startX = clientX;
+            startY = clientY;
+            
+            const panel = document.getElementById('overlay-panel');
+            startWidth = panel.offsetWidth;
+            startHeight = panel.offsetHeight;
+
+            document.addEventListener('mousemove', doDrag);
+            document.addEventListener('touchmove', doDrag, {passive: false});
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+        }
+
+        function doDrag(e) {
+            if (!isResizing) return;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            if (window.innerWidth >= 850) {
+                let newWidth = startWidth - (clientX - startX);
+                if(newWidth < 250) newWidth = 250; 
+                if(newWidth > window.innerWidth * 0.8) newWidth = window.innerWidth * 0.8; 
+                document.documentElement.style.setProperty('--panel-width', newWidth + 'px');
+            } else {
+                let newHeight = startHeight - (clientY - startY);
+                if(newHeight < window.innerHeight * 0.15) newHeight = window.innerHeight * 0.15;
+                if(newHeight > window.innerHeight * 0.9) newHeight = window.innerHeight * 0.9;
+                document.documentElement.style.setProperty('--panel-height', newHeight + 'px');
+            }
+        }
+
+        function stopDrag() {
+            isResizing = false;
+            document.removeEventListener('mousemove', doDrag);
+            document.removeEventListener('touchmove', doDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchend', stopDrag);
+            
+            localStorage.setItem('panel-width', document.documentElement.style.getPropertyValue('--panel-width'));
+            localStorage.setItem('panel-height', document.documentElement.style.getPropertyValue('--panel-height'));
+        }
+    }
+
+    function correctClassicalChinese(twText) {
+        twText = twText.replace(/皇[後裏裡]/g, '皇后')
+                       .replace(/太[後裏裡]/g, '太后')
+                       .replace(/君[後裏裡]/g, '君后')
+                       .replace(/王[後裏裡]/g, '王后')
+                       .replace(/神[後裏裡]/g, '神后')
+                       .replace(/帝[後裏裡]/g, '帝后')
+                       .replace(/天[後裏裡]/g, '天后')
+                       .replace(/[後裏裡]土/g, '后土')
+                       .replace(/[後裏裡]稷/g, '后稷')
+                       .replace(/夏[後裏裡]/g, '夏后')
+                       .replace(/元[後裏裡]/g, '元后');
+                       
+        twText = twText.replace(/([一二三四五六七八九十百千萬億兆幾半數])[裡裏]/g, '$1里')
+                       .replace(/故[裡裏]/g, '故里')
+                       .replace(/鄉[裡裏]/g, '鄉里')
+                       .replace(/鄰[裡裏]/g, '鄰里')
+                       .replace(/[裡裏]數/g, '里數')
+                       .replace(/[裡裏]路/g, '里路')
+                       .replace(/市[裡裏]/g, '市里')
+                       .replace(/[裡裏]長/g, '里長')
+                       .replace(/[裡裏]正/g, '里正')
+                       .replace(/坊[裡裏]/g, '坊里')
+                       .replace(/[裡裏]人/g, '里人')
+                       .replace(/萬[裡裏]侯/g, '萬里侯');
+
+        twText = twText.replace(/(^|[「『，。！？、；：\s>])餘/g, '$1余'); 
+        twText = twText.replace(/餘(幼|觀|嘗|聞|悲|適|將|謂|病|之|曰|以|為|一人|小子|家|宗|心|意|乃|亦|故|獨)/g, '余$1');
+        twText = twText.replace(/([予我])餘/g, '$1余');
+
+        twText = twText.replace(/([曰言謂稱有語聞人子公客])雲/g, '$1云')
+                       .replace(/不知所雲/g, '不知所云')
+                       .replace(/雲(云|者|爾|然)/g, '云$1')
+                       .replace(/云雲/g, '云云')
+                       .replace(/雲雲/g, '云云');
+
+        twText = twText.replace(/遊魚/g, '游魚')
+                       .replace(/上遊/g, '上游')
+                       .replace(/下遊/g, '下游')
+                       .replace(/中遊/g, '中游')
+                       .replace(/交遊/g, '交游');
+
+        twText = twText.replace(/山重水複/g, '山重水復')
+                       .replace(/無以複加/g, '無以復加')
+                       .replace(/複[命生]/g, '復命')
+                       .replace(/複返/g, '復返')
+                       .replace(/複行/g, '復行')
+                       .replace(/複至/g, '復至')
+                       .replace(/複得/g, '復得');
+
+        twText = twText.replace(/風採/g, '風采')
+                       .replace(/神採/g, '神采')
+                       .replace(/辭採/g, '辭采');
+
+        twText = twText.replace(/遠徵/g, '遠征')
+                       .replace(/徵伐/g, '征伐')
+                       .replace(/出徵/g, '出征')
+                       .replace(/徵戰/g, '征戰')
+                       .replace(/徵夫/g, '征夫')
+                       .replace(/南徵/g, '南征')
+                       .replace(/北徵/g, '北征')
+                       .replace(/徵戍/g, '征戍')
+                       .replace(/徵客/g, '征客');
+                       
+        twText = twText.replace(/隻是/g, '只是')
+                       .replace(/隻有/g, '只有')
+                       .replace(/隻要/g, '只要')
+                       .replace(/隻能/g, '只能')
+                       .replace(/隻得/g, '只得')
+                       .replace(/隻管/g, '只管')
+                       .replace(/隻顧/g, '只顧')
+                       .replace(/隻好/g, '只好')
+                       .replace(/隻怕/g, '只怕');
+
+        twText = twText.replace(/鹹([及與以而皆所曰謂有知見聽聞受集群寧宜來至悉使為])/g, '咸$1')
+                       .replace(/([老少皆眾群])鹹/g, '$1咸')
+                       .replace(/鹹(陽|池|豐|平|亨|熙|信)/g, '咸$1')
+                       .replace(/鹹集/g, '咸集')
+                       .replace(/鹹通/g, '咸通');
+                       
+        twText = twText.replace(/品嚐/g, '品嘗').replace(/嚐試/g, '嘗試').replace(/未嚐/g, '未嘗').replace(/何嚐/g, '何嘗');
+        twText = twText.replace(/誌怪/g, '志怪').replace(/三國誌/g, '三國志');
+        twText = twText.replace(/鍾情/g, '鍾情').replace(/一見鍾情/g, '一見鍾情').replace(/鍾愛/g, '鍾愛');
+        twText = twText.replace(/宣佈/g, '宣布').replace(/分佈/g, '分布').replace(/佈衣/g, '布衣');
+
+        twText = twText.replace(/([白黑鬚毛頭結披怒鶴束短長落剪])發/g, '$1髮')
+                       .replace(/妾發/g, '妾髮')
+                       .replace(/發膚/g, '髮膚')
+                       .replace(/發白/g, '髮白')
+                       .replace(/結發/g, '結髮')
+                       .replace(/發冠/g, '髮冠')
+                       .replace(/發簪/g, '髮簪')
+                       .replace(/發絲/g, '髮絲')
+                       .replace(/千鈞一發/g, '千鈞一髮')
+                       .replace(/令人發指/g, '令人髮指')
+                       .replace(/被發/g, '被髮')
+                       .replace(/散發/g, '散髮')
+                       .replace(/華發/g, '華髮')
+                       .replace(/發髻/g, '髮髻')
+                       .replace(/發鬢/g, '髮鬢');
+                       
+        twText = twText.replace(/長幹/g, '長干')
+                       .replace(/幹戈/g, '干戈')
+                       .replace(/天幹/g, '天干')
+                       .replace(/若幹/g, '若干')
+                       .replace(/何幹/g, '何干')
+                       .replace(/相幹/g, '相干')
+                       .replace(/幹連/g, '干連')
+                       .replace(/幹預/g, '干預')
+                       .replace(/江幹/g, '江干')
+                       .replace(/幹將/g, '干將')
+                       .replace(/幹雲/g, '干雲')
+                       .replace(/幹戚/g, '干戚')
+                       .replace(/幹犯/g, '干犯')
+                       .replace(/幹祿/g, '干祿');
+
+        return twText;
+    }
+
+    function safeConvert(val) {
+        if (!val) return "";
+        if (Array.isArray(val)) val = val.join("\n");
+        if (typeof val === 'object') val = JSON.stringify(val);
+        let twText = converter(String(val));
+        
+        twText = twText.replace(/“/g, '「').replace(/”/g, '」').replace(/‘/g, '『').replace(/’/g, '』');
+        twText = correctClassicalChinese(twText);
+
+        return twText;
+    }
+
+    function cleanClassicalContent(text) {
+        return removeBrackets(text);
+    }
+
+    // 修復第一段不縮排問題：強制清除 HTML 產生的隱形空格與全形空格
+    function wrapParagraphs(text) {
+        if (!text) return '';
+        text = text.replace(/&nbsp;/g, '').replace(/　/g, ''); 
+        let lines = text.split(/\r?\n/).map(x => x.trim()).filter(x => x !== '');
+        return lines.map(line => `<p>${line}</p>`).join('');
+    }
+
+    function renderCategories() {
+        const grid = document.getElementById('dynasty-grid');
+        grid.innerHTML = '';
+        const sorted = Object.keys(db).sort((a, b) => (dynastyOrder.indexOf(a) !== -1 ? dynastyOrder.indexOf(a) : 999) - (dynastyOrder.indexOf(b) !== -1 ? dynastyOrder.indexOf(b) : 999));
+
+        for (let dyn of sorted) {
+            if (db[dyn].length === 0) continue; 
+            const btn = document.createElement('div');
+            btn.className = 'card-btn';
+            btn.innerHTML = `<h3>${dyn}</h3><p>長篇 ${db[dyn].length} 卷</p>`;
+            btn.onclick = () => openDynasty(dyn);
+            grid.appendChild(btn);
+        }
+    }
+
+    function generateDifficultyAndSort(poemsArray) {
+        poemsArray.forEach(p => {
+            p._rawLength = cleanClassicalContent(safeConvert(p.content || "")).length;
+        });
+        
+        let temp = [...poemsArray].sort((a, b) => a._rawLength - b._rawLength);
+        let total = temp.length;
+        if (total === 0) return;
+        
+        temp.forEach((p, idx) => {
+            if (idx < total * 0.2) p._diff = 1;
+            else if (idx < total * 0.4) p._diff = 2;
+            else if (idx < total * 0.6) p._diff = 3;
+            else if (idx < total * 0.8) p._diff = 4;
+            else p._diff = 5;
+        });
+
+        poemsArray.sort((a, b) => {
+            if (a._diff !== b._diff) return a._diff - b._diff;
+            let writerA = safeConvert(a.writer || '佚名');
+            let writerB = safeConvert(b.writer || '佚名');
+            if (writerA !== writerB) return writerA.localeCompare(writerB, 'zh-TW');
+            return a._rawLength - b._rawLength;
+        });
+    }
+
+    function renderDifficultyFilter() {
+        const filterBox = document.getElementById('diff-filter');
+        filterBox.innerHTML = '';
+        
+        const diffs = [
+            { val: 0, label: '全部難度', cls: 'diff-0' },
+            { val: 1, label: '難度一', cls: 'diff-1' },
+            { val: 2, label: '難度二', cls: 'diff-2' },
+            { val: 3, label: '難度三', cls: 'diff-3' },
+            { val: 4, label: '難度四', cls: 'diff-4' },
+            { val: 5, label: '難度五', cls: 'diff-5' }
+        ];
+
+        diffs.forEach(d => {
+            const btn = document.createElement('div');
+            btn.className = `diff-tag ${d.cls} ${currentActiveDifficulty === d.val ? 'active' : ''}`;
+            btn.innerText = d.label;
+            btn.onclick = (e) => filterByDifficulty(d.val, e.target);
+            filterBox.appendChild(btn);
+        });
+    }
+
+    function filterByDifficulty(val, element) {
+        currentActiveDifficulty = val;
+        document.querySelectorAll('#diff-filter .diff-tag').forEach(el => el.classList.remove('active'));
+        if (element) element.classList.add('active');
+        renderPoemList();
+    }
+
+    function filterByAuthor(author, element) {
+        currentActiveAuthor = author;
+        document.querySelectorAll('#author-filter .author-tag').forEach(el => el.classList.remove('active'));
+        if (element) element.classList.add('active');
+        renderPoemList();
+    }
+
+    function openDynasty(dyn) {
+        currentDynastyPoems = [...db[dyn]]; 
+        generateDifficultyAndSort(currentDynastyPoems);
+
+        document.getElementById('list-title').innerText = `${dyn}卷宗`;
+        document.getElementById('search-input').value = '';
+        
+        currentActiveDifficulty = 0;
+        renderDifficultyFilter();
+
+        let authorCounts = {};
+        currentDynastyPoems.forEach(p => {
+            let author = safeConvert(p.writer || '佚名');
+            authorCounts[author] = (authorCounts[author] || 0) + 1;
+        });
+
+        let sortedAuthors = Object.keys(authorCounts).sort((a, b) => authorCounts[b] - authorCounts[a]);
+        
+        const filterBox = document.getElementById('author-filter');
+        filterBox.innerHTML = '';
+        
+        const btnAll = document.createElement('div');
+        btnAll.className = 'author-tag active';
+        btnAll.innerText = `全部作者 (${currentDynastyPoems.length})`;
+        btnAll.onclick = (e) => filterByAuthor('全部', e.target);
+        filterBox.appendChild(btnAll);
+
+        sortedAuthors.slice(0, 40).forEach(author => {
+            const btn = document.createElement('div');
+            btn.className = 'author-tag';
+            btn.innerText = `${author}`;
+            btn.onclick = (e) => filterByAuthor(author, e.target);
+            filterBox.appendChild(btn);
+        });
+
+        filterByAuthor('全部', btnAll); 
+        showView('view-list');
+    }
+
+    function openFavorites() {
+        if (favorites.length === 0) {
+            alert("您尚未加入任何最愛篇章。");
+            return;
+        }
+        currentDynastyPoems = [...favorites];
+        generateDifficultyAndSort(currentDynastyPoems);
+
+        document.getElementById('list-title').innerText = `我的最愛`;
+        document.getElementById('search-input').value = '';
+        
+        currentActiveDifficulty = 0;
+        renderDifficultyFilter();
+
+        let authorCounts = {};
+        currentDynastyPoems.forEach(p => {
+            let author = safeConvert(p.writer || '佚名');
+            authorCounts[author] = (authorCounts[author] || 0) + 1;
+        });
+
+        let sortedAuthors = Object.keys(authorCounts).sort((a, b) => authorCounts[b] - authorCounts[a]);
+        
+        const filterBox = document.getElementById('author-filter');
+        filterBox.innerHTML = '';
+        
+        const btnAll = document.createElement('div');
+        btnAll.className = 'author-tag active';
+        btnAll.innerText = `全部作者 (${currentDynastyPoems.length})`;
+        btnAll.onclick = (e) => filterByAuthor('全部', e.target);
+        filterBox.appendChild(btnAll);
+
+        sortedAuthors.slice(0, 40).forEach(author => {
+            const btn = document.createElement('div');
+            btn.className = 'author-tag';
+            btn.innerText = `${author}`;
+            btn.onclick = (e) => filterByAuthor(author, e.target);
+            filterBox.appendChild(btn);
+        });
+
+        filterByAuthor('全部', btnAll); 
+        showView('view-list');
+    }
+
+    function renderPoemList() {
+        const list = document.getElementById('poem-list');
+        list.innerHTML = '';
+        const keyword = document.getElementById('search-input').value.toLowerCase();
+
+        const diffLabels = ["", "難度一", "難度二", "難度三", "難度四", "難度五"];
+        const diffCls = ["", "diff-1", "diff-2", "diff-3", "diff-4", "diff-5"];
+
+        currentDynastyPoems.forEach(p => {
+            let title = safeConvert(p.title || '無題');
+            let writer = safeConvert(p.writer || '佚名');
+            
+            if (currentActiveAuthor !== '全部' && writer !== currentActiveAuthor) return;
+            if (currentActiveDifficulty !== 0 && p._diff !== currentActiveDifficulty) return;
+            if (keyword && !(title.toLowerCase().includes(keyword) || writer.toLowerCase().includes(keyword))) return;
+
+            const snippet = removeBrackets(safeConvert(p.content || '')).substring(0, 35) + '...';
+            let diffHtml = `<span class="diff-badge ${diffCls[p._diff]}">${diffLabels[p._diff]}</span>`;
+
+            const item = document.createElement('div');
+            item.className = `poem-card diff-border-${p._diff}`;
+            item.innerHTML = `
+                <div>
+                    <div class="pc-title">${title}</div>
+                    <div class="pc-snippet">${snippet}</div>
+                </div>
+                <div class="pc-meta">
+                    <div class="pc-author">${writer}</div>
+                    <div class="pc-diff">${diffHtml}</div>
+                </div>
+            `;
+            item.onclick = () => openDetail(p);
+            list.appendChild(item);
+        });
+    }
+
+    function filterList() { renderPoemList(); }
+
+    function openDetail(p) {
+        currentPoem = p;
+        stopTTS();
+        closePanel(); 
+        
+        let title = safeConvert(p.title || '無題');
+        let writer = safeConvert(p.writer || '佚名');
+        let dyn = safeConvert(p.dynasty || '未知');
+
+        document.getElementById('p-title').innerText = title;
+        document.getElementById('p-author').innerText = `〔${dyn}〕 ${writer}`;
+
+        let contentStr = cleanClassicalContent(safeConvert(p.content));
+        document.getElementById('p-content-unified').innerHTML = wrapParagraphs(contentStr);
+
+        let transStr = removeBrackets(safeConvert(p.translation));
+        let remarkStr = safeConvert(p.remark);
+        let shangxiStr = removeBrackets(safeConvert(p.shangxi));
+
+        cacheRemark = parseRemarksToTable(remarkStr);
+        cacheTranslation = transStr ? `<div class="morandi-text">${wrapParagraphs(transStr)}</div>` : '<div class="empty">卷宗殘缺，暫無譯文</div>';
+        cacheShangxi = shangxiStr ? `<div class="morandi-text">${wrapParagraphs(shangxiStr)}</div>` : '<div class="empty">卷宗殘缺，暫無賞析</div>';
+
+        updateFavIcon();
+        document.getElementById('fab-bar').style.display = 'flex';
+        showView('view-detail');
+        window.scrollTo(0, 0);
+    }
+
+    function closePoem() {
+        stopTTS();
+        closePanel();
+        document.getElementById('fab-bar').style.display = 'none';
+        showView('view-list');
+    }
+
+    function isFavorite(poem) {
+        return favorites.some(f => f.title === poem.title && f.writer === poem.writer);
+    }
+
+    function toggleCurrentFavorite() {
+        if(!currentPoem) return;
+        if(isFavorite(currentPoem)) {
+            favorites = favorites.filter(f => !(f.title === currentPoem.title && f.writer === currentPoem.writer));
+        } else {
+            favorites.push(currentPoem);
+        }
+        localStorage.setItem('guwen_favorites', JSON.stringify(favorites));
+        updateFavIcon();
+    }
+
+    function updateFavIcon() {
+        const btn = document.getElementById('btn-toggle-fav');
+        if(!btn || !currentPoem) return;
+        if(isFavorite(currentPoem)) {
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" stroke="var(--cinnabar-red)" stroke-width="2" fill="var(--cinnabar-red)"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+        } else {
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+        }
+    }
+
+    document.addEventListener('selectionchange', () => {
+        const popup = document.getElementById('search-popup');
+        const selection = window.getSelection();
+        const text = selection.toString().trim();
+        
+        if (text.length > 0 && document.getElementById('view-detail').classList.contains('active')) {
+            lastSelectedText = text;
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            popup.style.display = 'flex';
+            popup.style.top = (window.pageYOffset + rect.top - 45) + 'px';
+            popup.style.left = (window.pageXOffset + rect.left + (rect.width / 2) - 18) + 'px';
+        } else {
+            popup.style.display = 'none';
+            lastSelectedText = "";
+        }
+    });
+
+    function execGoogleSearch(e) {
+        if(e) { e.preventDefault(); e.stopPropagation(); }
+        if(lastSelectedText) {
+            window.open('https://www.google.com/search?q=' + encodeURIComponent(`「${lastSelectedText}」 意思`), 'GoogleSearch', 'width=600,height=600,top=100,left=200');
+            window.getSelection().removeAllRanges();
+            document.getElementById('search-popup').style.display = 'none';
+            lastSelectedText = "";
+        }
+    }
+
+    function parseRemarksToTable(text) {
+        let safeTitle = currentPoem ? safeConvert(currentPoem.title) : '未知';
+        
+        let lines = text.split(/\r?\n/);
+        let tableHtml = `<table class="remark-table">
+            <thead>
+                <tr>
+                    <th width="10%">序號</th>
+                    <th width="20%" style="text-align:center;">字/詞/句</th>
+                    <th>解析</th>
+                    <th width="15%" style="text-align:center;">收藏</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        let serialCount = 1;
+        
+        lines.forEach(line => {
+            if (!line.trim()) return;
+            
+            let pureLine = line.trim().replace(/^([\[\(【（]?\d+[\]\)】）]?|[①-⑳])\s*[.:：]?\s*/, '');
+            if (!pureLine) return;
+
+            let vocab = '-';
+            let exp = pureLine;
+
+            let bracketMatch = pureLine.match(/^[【\[]([^】\]]+)[】\]]\s*(.*)$/);
+            if (bracketMatch) {
+                vocab = bracketMatch[1].trim();
+                exp = bracketMatch[2].trim();
+            } else {
+                let splitMatch = pureLine.match(/^([^：:——]{1,15})[：:——]\s*(.*)$/);
+                if (splitMatch) {
+                    vocab = splitMatch[1].trim();
+                    exp = splitMatch[2].trim();
+                }
+            }
+            
+            vocab = removeBrackets(vocab);
+            exp = removeBrackets(exp);
+
+            if(!vocab) return; 
+
+            let vocabHtml = vocab !== '-' ? `<span class="vocab-badge">${vocab}</span>` : `<span style="color:var(--ink-gray)">-</span>`;
+            let isSaved = savedVocabs.some(v => v.vocab === vocab && v.title === safeTitle);
+            let heartSvg = isSaved 
+                ? `<svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--cinnabar-red)" stroke-width="2" fill="var(--cinnabar-red)"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`
+                : `<svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--ink-gray)" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
+
+            let safeVocabStr = encodeURIComponent(vocab);
+            let safeExpStr = encodeURIComponent(exp);
+
+            tableHtml += `<tr>
+                <td class="r-idx">${serialCount}.</td>
+                <td style="text-align:center;">${vocabHtml}</td>
+                <td>${exp}</td>
+                <td style="text-align:center; vertical-align:middle;">
+                    <button class="btn-vocab-save" onclick="toggleVocab('${safeVocabStr}', '${safeExpStr}', this)" title="收藏此詞解">
+                        ${heartSvg}
+                    </button>
+                </td>
+            </tr>`;
+            serialCount++;
+        });
+        tableHtml += '</tbody></table>';
+        return tableHtml;
+    }
+
+    function toggleVocab(encVocab, encExp, btn) {
+        let vocab = decodeURIComponent(encVocab);
+        let exp = decodeURIComponent(encExp);
+        
+        let title = currentPoem ? safeConvert(currentPoem.title) : '未知';
+        let author = currentPoem ? safeConvert(currentPoem.writer) : '佚名';
+
+        let idx = savedVocabs.findIndex(v => v.vocab === vocab && v.title === title);
+        if (idx >= 0) {
+            savedVocabs.splice(idx, 1);
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--ink-gray)" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
+        } else {
+            savedVocabs.push({ vocab, exp, title, author });
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--cinnabar-red)" stroke-width="2" fill="var(--cinnabar-red)"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
+        }
+        localStorage.setItem('guwen_vocabs', JSON.stringify(savedVocabs));
+    }
+
+    function openVocabBook() {
+        closePanel();
+        stopTTS();
+        renderVocabBook();
+        showView('view-vocab');
+    }
+
+    function renderVocabBook() {
+        const list = document.getElementById('vocab-list');
+        list.innerHTML = '';
+        if (savedVocabs.length === 0) {
+            list.innerHTML = '<div class="empty">生詞本空空如也，快展卷閱讀並收藏注釋吧！</div>';
+            return;
+        }
+        
+        savedVocabs.forEach(v => {
+            let displayTitle = safeConvert(v.title);
+            let displayAuthor = safeConvert(v.author);
+            
+            const card = document.createElement('div');
+            card.className = 'vocab-card';
+            card.innerHTML = `
+                <button class="v-del" onclick="removeVocab('${encodeURIComponent(v.vocab)}', '${encodeURIComponent(v.title)}')" title="刪除此紀錄">
+                    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+                <div class="v-word">${v.vocab}</div>
+                <div class="v-exp">${v.exp}</div>
+                <div class="v-source">《${displayTitle}》 — ${displayAuthor}</div>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    function removeVocab(encVocab, encTitle) {
+        let vocab = decodeURIComponent(encVocab);
+        let title = decodeURIComponent(encTitle);
+        savedVocabs = savedVocabs.filter(v => !(v.vocab === vocab && v.title === title));
+        localStorage.setItem('guwen_vocabs', JSON.stringify(savedVocabs));
+        renderVocabBook();
+    }
+
+    function openPanel(type) {
+        const panel = document.getElementById('overlay-panel');
+        const title = document.getElementById('panel-title');
+        const body = document.getElementById('panel-body');
+        
+        if (type === 'remark') {
+            title.innerText = '注釋解析';
+            body.innerHTML = cacheRemark;
+        } else if (type === 'translation') {
+            title.innerText = '白話譯文';
+            body.innerHTML = cacheTranslation;
+        } else if (type === 'shangxi') {
+            title.innerText = '賞析點評';
+            body.innerHTML = cacheShangxi;
+        }
+        
+        panel.classList.add('open');
+        document.body.classList.add('panel-open');
+        body.scrollTop = 0;
+    }
+
+    function closePanel() {
+        document.getElementById('overlay-panel').classList.remove('open');
+        document.body.classList.remove('panel-open');
+    }
+
+    function showView(viewId) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+    }
+
+    /* --- AI 智能出卷功能 --- */
+    function openQuizModal() {
+        if(!currentPoem) return;
+        document.getElementById('quiz-modal').classList.add('active');
+    }
+
+    function closeQuizModal() {
+        document.getElementById('quiz-modal').classList.remove('active');
+    }
+
+    function generateQuizPrompt() {
+        let chkMC = document.getElementById('chk-mc').checked;
+        let numMC = document.getElementById('num-mc').value;
+        let chkTrans = document.getElementById('chk-trans').checked;
+        let numTrans = document.getElementById('num-trans').value;
+        let chkQA = document.getElementById('chk-qa').checked;
+        let numQA = document.getElementById('num-qa').value;
+
+        if (!chkMC && !chkTrans && !chkQA) {
+            alert('請至少勾選一種題型！');
+            return;
+        }
+
+        let prompt = `你是一位香港 DSE 中國語文科的資深權威名師及閱卷員。請根據以下古文篇章，為我出具一份DSE閱讀理解練習卷，出題用詞、方向、形式等都必須參照真實的DSE中文卷一。\n\n`;
+        prompt += `篇章：《${safeConvert(currentPoem.title)}》\n`;
+        prompt += `作者：${safeConvert(currentPoem.writer)}\n`;
+        prompt += `內容：\n${removeBrackets(cleanClassicalContent(safeConvert(currentPoem.content)))}\n\n`;
+        
+        prompt += `【出題要求】\n請根據以上內容，出具以下題型的題目：\n`;
+        if (chkMC) prompt += `- 多項選擇題 (MC)：${numMC} 題\n`;
+        if (chkTrans) prompt += `- 語譯題：${numTrans} 題\n`;
+        if (chkQA) prompt += `- 長問答：${numQA} 題\n`;
+
+        prompt += `\n【出卷與排版流程】
+1. 請先展示「整份練習卷的題目」，讓我可以先作答。在題目區塊絕對不要透露任何答案。
+2. 在題目展示完畢後，請給出「標準答案與詳細評分參考」。\n`;
+
+        if (chkQA) {
+            prompt += `\n【長問答標準答案之嚴格寫作規定】（請在給出長問答答案時，絕對嚴格執行以下 DSE 標準）
+1. 極度嚴謹的評分與拆解機制：答案必須具備深度，若流於表面或欠缺文本依據，不可給予滿分。
+2. 多論點絕對分離與因題制宜：任何總分達 4 分或以上的題目，必須最少拆解為兩個或以上的獨立論點。必須「因題制宜」決定結構（並列型、定義與應用型、跨篇章比較型等）。絕對不可將多個論點的主題句或文本依據塞在同一個段落或表格內。
+3. 毋須直引原文原則：不需要直引原文，只需準確「概括」或「引述」文本內容與情節即可。
+4. 【一文一格】絕對防重複原則（極度重要）：任何一段答案文字，只能歸入「主題句」、「文本依據/概括」、「闡釋」其中一個最準確的層次。絕對不可重複。主題句必須經過高度的「提煉」與「歸納」。
+5. 強制文本依據原則（極度重要）：即使是寫作手法好處題，也必須從文本中找出具體的相關情節或句意作為佐證例子。絕對禁止「無特定文本依據」、「泛指全文運用」或空泛論述。
+6. 精簡點評與深度闡釋（拒絕後設說明）：闡釋部分必須直接給出詳細、具體、豐富的完美示範內容，深入解剖文本深層邏輯。絕對不可出現「必須緊扣XX的影響力」這類指導語或後設說明。闡釋內容必須 100% 緊扣並證明該主題句。
+7. 表格化排版：長問答的標準答案請強制使用「表格」形式呈現，每一獨立論點生成一個獨立表格。表格欄位強制為：【主題句】、【文本依據/概括】、【闡釋】，以最嚴謹的方式展示滿分答案的結構。`;
+        }
+
+        navigator.clipboard.writeText(prompt).then(() => {
+            alert('已成功編寫指令！\n\n即將為您開啟 Gemini，請直接貼上指令並送出。');
+            window.open('https://gemini.google.com/app', '_blank');
+            closeQuizModal();
+        }).catch(err => {
+            // 如果瀏覽器封鎖了剪貼簿權限的 fallback
+            alert('系統複製失敗，請手動複製以下指令：\n\n' + prompt);
+            console.log(prompt);
+        });
+    }
+
+    let synth = window.speechSynthesis;
+    let currentUtterance = null;
+    
+    const playSvg = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 吟誦`;
+    const stopSvg = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><rect x="6" y="6" width="12" height="12"></rect></svg> 停止`;
+
+    function toggleTTS() {
+        const btn = document.getElementById('btn-tts');
+        const pWrapper = document.getElementById('progress-wrapper');
+        const pBar = document.getElementById('progress-bar-fill');
+
+        if (synth.speaking || synth.paused) {
+            stopTTS();
+        } else {
+            if (!currentPoem) return;
+            let rawContent = removeBrackets(cleanClassicalContent(safeConvert(currentPoem.content)));
+            let textToRead = safeConvert(currentPoem.title) + "。" + 
+                             safeConvert(currentPoem.writer) + "。" + 
+                             rawContent.replace(/<[^>]+>/g, '').replace(/\n/g, '。');
+            
+            currentUtterance = new SpeechSynthesisUtterance(textToRead);
+            currentUtterance.lang = 'zh-TW';
+            currentUtterance.rate = 0.8; 
+            
+            currentUtterance.onstart = () => {
+                btn.style.backgroundColor = 'var(--cinnabar-red)';
+                btn.style.color = 'var(--paper-bg)';
+                btn.innerHTML = stopSvg;
+                pWrapper.style.display = 'block';
+                pBar.style.width = '0%';
+            };
+            
+            currentUtterance.onboundary = (event) => {
+                if (event.name === 'word' || event.name === 'sentence') {
+                    let percent = Math.floor((event.charIndex / textToRead.length) * 100);
+                    if (percent > 100) percent = 100;
+                    pBar.style.width = percent + '%';
+                }
+            };
+
+            currentUtterance.onend = () => stopTTS();
+            currentUtterance.onerror = () => stopTTS();
+            
+            synth.speak(currentUtterance);
+        }
+    }
+
+    function stopTTS() {
+        if (synth) synth.cancel();
+        const btn = document.getElementById('btn-tts');
+        const pWrapper = document.getElementById('progress-wrapper');
+        if (btn) {
+            btn.style.backgroundColor = 'transparent';
+            btn.style.color = 'var(--cinnabar-red)';
+            btn.innerHTML = playSvg;
+        }
+        if (pWrapper) pWrapper.style.display = 'none';
+    }
+</script>
+</body>
+</html>
