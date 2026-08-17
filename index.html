@@ -1541,9 +1541,8 @@
 
     /* ======================================================== */
 
-   function openDetail(p) {
+ function openDetail(p) {
         currentPoem = p;
-        // stopTTS(); // (稍後會移除 TTS，這行先註解或刪除)
         closePanel(); 
         hideVocabTooltip();
         
@@ -1553,31 +1552,35 @@
 
         document.getElementById('p-title').innerText = title;
         document.getElementById('p-author').innerText = `〔${dyn}〕 ${writer}`;
-        
-        // 先顯示過場提示，不阻塞 UI 渲染
-        document.getElementById('p-content-unified').innerHTML = '<div class="empty">正在解析卷宗，請稍候...</div>';
+
+        // 1. 極速載入：先放入沒有注釋高亮的純淨文字，讓畫面 0 秒瞬間顯示
+        let rawContent = cleanClassicalContent(safeConvert(p.content));
+        document.getElementById('p-content-unified').innerHTML = wrapParagraphs(rawContent);
 
         updateFavIcon();
         document.getElementById('fab-bar').style.display = 'flex';
         showView('view-detail');
         window.scrollTo(0, 0);
 
-        // 延遲 50 毫秒執行繁重的文字處理，確保畫面切換動畫保持極致流暢
-        setTimeout(() => {
-            let transStr = removeBrackets(safeConvert(p.translation));
-            let remarkStr = safeConvert(p.remark);
-            let shangxiStr = removeBrackets(safeConvert(p.shangxi));
+        // 2. 背景處理：利用 requestAnimationFrame 確保畫面切換流暢後，再於背景偷偷處理耗能運算
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                let transStr = removeBrackets(safeConvert(p.translation));
+                let remarkStr = safeConvert(p.remark);
+                let shangxiStr = removeBrackets(safeConvert(p.shangxi));
 
-            let extractedVocabs = extractVocabs(remarkStr);
-            let contentStr = cleanClassicalContent(safeConvert(p.content));
-            let highlightedContent = highlightVocabsInContent(contentStr, extractedVocabs);
+                let extractedVocabs = extractVocabs(remarkStr);
+                
+                // 替換高亮文字（使用者視覺上只會看到文字瞬間多出虛線）
+                let highlightedContent = highlightVocabsInContent(rawContent, extractedVocabs);
+                document.getElementById('p-content-unified').innerHTML = wrapParagraphs(highlightedContent);
 
-            document.getElementById('p-content-unified').innerHTML = wrapParagraphs(highlightedContent);
-
-            cacheRemark = parseRemarksToTableFromList(extractedVocabs);
-            cacheTranslation = transStr ? `<div class="morandi-text">${wrapParagraphs(transStr)}</div>` : '<div class="empty">卷宗殘缺，暫無譯文</div>';
-            cacheShangxi = shangxiStr ? `<div class="morandi-text">${wrapParagraphs(shangxiStr)}</div>` : '<div class="empty">卷宗殘缺，暫無賞析</div>';
-        }, 50);
+                // ✨ 關鍵優化：將解析好的 HTML "預先" 塞入隱藏的 DOM 中
+                document.getElementById('content-remark').innerHTML = parseRemarksToTableFromList(extractedVocabs);
+                document.getElementById('content-translation').innerHTML = transStr ? `<div class="morandi-text">${wrapParagraphs(transStr)}</div>` : '<div class="empty">卷宗殘缺，暫無譯文</div>';
+                document.getElementById('content-shangxi').innerHTML = shangxiStr ? `<div class="morandi-text">${wrapParagraphs(shangxiStr)}</div>` : '<div class="empty">卷宗殘缺，暫無賞析</div>';
+            }, 50); // 延遲 50ms，讓手機專心把過場動畫跑完
+        });
     }
 
     function closePoem() {
@@ -1733,47 +1736,37 @@
         renderVocabBook();
     }
 
-  function openPanel(type) {
-        hideVocabTooltip(); // 開啟側邊欄時自動隱藏懸浮窗
+   function openPanel(type) {
+        hideVocabTooltip();
         const panel = document.getElementById('overlay-panel');
         const title = document.getElementById('panel-title');
-        const body = document.getElementById('panel-body');
         
-        // 1. 設定標題
-        if (type === 'remark') title.innerText = '注釋解析';
-        else if (type === 'translation') title.innerText = '白話譯文';
-        else if (type === 'shangxi') title.innerText = '賞析點評';
+        // 先全部隱藏
+        document.getElementById('content-remark').style.display = 'none';
+        document.getElementById('content-translation').style.display = 'none';
+        document.getElementById('content-shangxi').style.display = 'none';
+
+        // ✨ 關鍵優化：不再使用 innerHTML 塞入龐大字串，改用 display 切換，手機 0 負擔
+        if (type === 'remark') {
+            title.innerText = '注釋解析';
+            document.getElementById('content-remark').style.display = 'block';
+        } else if (type === 'translation') {
+            title.innerText = '白話譯文';
+            document.getElementById('content-translation').style.display = 'block';
+        } else if (type === 'shangxi') {
+            title.innerText = '賞析點評';
+            document.getElementById('content-shangxi').style.display = 'block';
+        }
         
-        // 2. 先放入極輕量的「載入中」提示，絕不阻塞主線程
-        body.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--ink-gray); letter-spacing: 2px;">展開中...</div>';
-        
-        // 3. 立即觸發 CSS 抽屜滑出動畫 (此時完全不卡頓)
+        document.getElementById('panel-body').scrollTop = 0;
         panel.classList.add('open');
         document.body.classList.add('panel-open');
-        
-        // 4. ✨ 關鍵：等待 400 毫秒（等面板「完全滑出定格」後），才塞入龐大的表格資料
-        setTimeout(() => {
-            if (type === 'remark') {
-                body.innerHTML = cacheRemark;
-            } else if (type === 'translation') {
-                body.innerHTML = cacheTranslation;
-            } else if (type === 'shangxi') {
-                body.innerHTML = cacheShangxi;
-            }
-            body.scrollTop = 0;
-        }, 400); 
     }
 
     function closePanel() {
-        const panel = document.getElementById('overlay-panel');
-        // 1. 觸發收回動畫
-        panel.classList.remove('open');
-        
-        // 2. ✨ 關鍵：等待 400 毫秒（等面板「完全收回」後），再調整排版與清空記憶體
-        setTimeout(() => {
-            document.body.classList.remove('panel-open');
-            document.getElementById('panel-body').innerHTML = ''; // 清空龐大 DOM 釋放記憶體
-        }, 400);
+        document.getElementById('overlay-panel').classList.remove('open');
+        document.body.classList.remove('panel-open');
+        // 關閉時不再清空 HTML 內容，保留在記憶體裡，反覆打開都會極度絲滑
     }
 
     function showView(viewId) {
