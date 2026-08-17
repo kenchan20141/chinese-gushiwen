@@ -637,7 +637,7 @@
     </div>
 </div>
 
-<div id="search-popup" onmousedown="execGoogleSearch(event)" ontouchstart="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
+<div id="search-popup" onclick="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
 </div>
 
@@ -1455,7 +1455,11 @@
         }
     }
 
+    // 宣告一個計時器變數，防止選取區消失時按鈕瞬間不見
+    let selectionTimeout;
+
     document.addEventListener('selectionchange', () => {
+        clearTimeout(selectionTimeout); // 只要還在選取，就清除隱藏倒數
         const popup = document.getElementById('search-popup');
         const selection = window.getSelection();
         const text = selection.toString().trim();
@@ -1470,21 +1474,24 @@
             popup.style.top = (window.pageYOffset + rect.bottom + 10) + 'px';
             popup.style.left = (window.pageXOffset + rect.left + (rect.width / 2) - 18) + 'px';
         } else {
-            popup.style.display = 'none';
-            lastSelectedText = "";
+            // 加入 300 毫秒延遲，讓使用者點擊時，按鈕有足夠時間觸發 click 事件再隱藏
+            selectionTimeout = setTimeout(() => {
+                popup.style.display = 'none';
+                lastSelectedText = "";
+            }, 300);
         }
     });
 
     function execGoogleSearch(e) {
         if(e) { e.preventDefault(); e.stopPropagation(); }
         if(lastSelectedText) {
-            window.open('https://www.google.com/search?q=' + encodeURIComponent(`「${lastSelectedText}」 意思`), 'GoogleSearch', 'width=600,height=600,top=100,left=200');
+            // 改為純粹的 '_blank'，移除 width/height 參數，這樣 iOS Safari 就會乖乖開新分頁而不會阻擋
+            window.open('https://www.google.com/search?q=' + encodeURIComponent(`「${lastSelectedText}」 意思`), '_blank');
             window.getSelection().removeAllRanges();
             document.getElementById('search-popup').style.display = 'none';
             lastSelectedText = "";
         }
     }
-
     // 改寫：更新本機資料庫並同步所有快取 UI (Tooltip / 側邊面板)
     function toggleVocab(encVocab, encExp, btn) {
         let vocab = decodeURIComponent(encVocab);
