@@ -38,7 +38,7 @@
             overscroll-behavior: none;
         }
 
-       .book-container {
+     .book-container {
             max-width: 900px; margin: 30px auto; 
             background: #faf4e3;
             border: 1px solid var(--border-line);
@@ -47,7 +47,7 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             min-height: 90vh; position: relative;
             animation: unfoldScroll 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            /* 🛑 刪除 transition: all，改為明確指定 transform 與 opacity */
+            /* 🛑 這裡只允許 transform, opacity, box-shadow 有動畫 */
             transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -457,31 +457,37 @@
             opacity: 0.8; background-color: var(--cinnabar-red);
         }
 
-        @media (min-width: 850px) {
+
+@media (min-width: 850px) {
             .overlay-panel {
                 top: 0; right: 0; bottom: 0; width: var(--panel-width);
                 border-left: 2px solid var(--border-line);
                 transform: translateX(100%);
             }
             .overlay-panel.open { transform: translateX(0); }
-             /* 1. 取消平移，改為動態計算剩餘寬度並壓縮正文 */
-    body.panel-open .book-container { 
-        transform: none; 
-        margin-left: 2vw;
-        margin-right: calc(var(--panel-width) + 2vw);
-        max-width: calc(100vw - var(--panel-width) - 4vw);
-    }
-    
-    /* 2. 新增：讓底部的「注釋/譯文/賞析」懸浮按鈕，也能完美對齊剩餘空間的中心 */
-    body.panel-open .fab-bar {
-        left: calc((100vw - var(--panel-width)) / 2);
-    }
+            
+            /* ✨ 1. 書本瞬間收縮：動態計算剩餘寬度並讓出右側空間 */
+            body.panel-open .book-container { 
+                transform: none; 
+                margin-left: 2vw;
+                margin-right: calc(var(--panel-width) + 2vw);
+                max-width: calc(100vw - var(--panel-width) - 4vw);
+            }
+            
+            /* ✨ 2. 懸浮按鈕置中修正：讓底部的「注釋/譯文」按鈕也對齊剩餘空間的中心 */
+            body.panel-open .fab-bar {
+                left: calc((100vw - var(--panel-width)) / 2);
+            }
+
             .panel-resizer {
                 position: absolute; top: 0; left: -5px; bottom: 0; width: 10px; cursor: ew-resize; z-index: 1002;
             }
             .resizer-line { top: 50%; left: 4px; width: 4px; height: 40px; transform: translateY(-50%); }
             .vocab-grid { grid-template-columns: 1fr 1fr; }
         }
+
+
+        
         @media (max-width: 849px) {
             .book-container { margin: 0; min-height: 100vh; outline: none; border: none; box-shadow: none; }
             .book-page { padding: 20px 15px; }
