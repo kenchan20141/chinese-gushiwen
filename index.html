@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文言特訓</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
     <!-- 引入 OpenCC 繁簡轉換套件 -->
     <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
     <style>
@@ -38,7 +35,7 @@
             overscroll-behavior: none;
         }
 
-       .book-container {
+        .book-container {
             max-width: 900px; margin: 30px auto; 
             background: #faf4e3;
             border: 1px solid var(--border-line);
@@ -47,8 +44,7 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             min-height: 90vh; position: relative;
             animation: unfoldScroll 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            /* 🛑 刪除 transition: all，改為明確指定 transform 與 opacity */
-            transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         @keyframes unfoldScroll {
@@ -67,88 +63,35 @@
         .view { display: none; }
         .view.active { display: block; animation: inkFadeIn 0.5s ease both; }
 
-       /* ✨ 顛覆性設計：殿堂級牌匾 (Plaque) 與懸掛印籤 */
         header {
             position: relative;
-            margin: -40px -50px 35px -50px; /* 向外延展，貼齊書本邊緣 */
-            padding: 45px 0;
-            background-color: #15181c; /* 極致深邃的玄黑底色 */
-            /* 隱約的橫向絹絲紋理 */
-            background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px);
-            border-bottom: 6px solid var(--cinnabar-red); /* 底部厚重朱砂壓線 */
-            text-align: center;
-            border-radius: 4px 4px 0 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-            overflow: hidden; /* 確保內框不會超出 */
-        }
-        
-        /* 牌匾內層的暗金裝飾線 */
-        header::after {
-            content: ""; position: absolute;
-            top: 10px; bottom: 10px; left: 10px; right: 10px;
-            border: 1px solid rgba(212, 175, 55, 0.25);
-            pointer-events: none;
+            text-align: center; border-bottom: 2px solid var(--border-line);
+            padding-bottom: 15px; margin-bottom: 25px;
         }
 
         .header-actions {
-            position: absolute; 
-            right: 35px; 
-            top: 50%; 
-            transform: translateY(-50%); /* 完美垂直置中 */
-            display: flex; gap: 15px; align-items: center;
-            z-index: 5;
+            position: absolute; right: 10px; bottom: 15px;
+            display: flex; gap: 12px; align-items: center;
         }
 
         .header-btn {
             background: transparent; border: none; cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
-            padding: 5px; display: flex; border-radius: 50%;
-        }
-        
-        /* 將右側的按鈕顏色配合黑底改為暗金色與朱紅色 */
-      /* 修改生詞庫(左側圖示)為古典的翠玉綠，與鎦金字體區隔 */
-       .header-btn:nth-child(1) svg { stroke: #4ea5b8; }
-        .header-btn:nth-child(2) svg { stroke: var(--cinnabar-red); }
-        
-        .header-btn:hover { 
-            transform: scale(1.15) translateY(-2px); 
-            background: rgba(255,255,255,0.08);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s; padding: 0; display: flex;
         }
 
-  h1.app-title {
-    position: relative;
-    color: #d4af37; 
-    font-size: 3.4em; 
-    letter-spacing: 24px; 
-    margin: 0 0 0 24px;
-    padding-left: 0;
-    font-weight: bold; /* ✨ 已加粗 */
-    font-family: var(--font-book); 
-    text-shadow: 0 4px 20px rgba(0,0,0,0.9); 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-}
-        /* 破格設計：將「神思」轉為垂直懸掛的壓角籤條 */
-        .stamp {
-            display: inline-flex;
-            writing-mode: vertical-rl; /* 豎排文字 */
-            background: var(--cinnabar-red);
-            color: #fff;
-            font-size: 0.35em;
-            letter-spacing: 8px;
-            padding: 16px 8px 8px 8px; 
-            margin-left: 5px;
-            border: 2px solid #f4ecd8; /* 雙層畫框感 */
-            outline: 1px solid var(--cinnabar-red); 
-            outline-offset: 2px;
-            transform: translateY(22px); /* 故意向下懸掛，突破標題的水平線 */
-            box-shadow: 3px 6px 15px rgba(0,0,0,0.6);
-            font-weight: bold;
-            font-family: var(--font-book);
+        .header-btn:hover { transform: scale(1.15); }
+
+        h1.app-title {
+            color: var(--ink-black); font-size: 2.8em; letter-spacing: 8px;
+            margin: 0 0 10px 0; font-weight: 700;
         }
+
+        .stamp {
+            display: inline-block; color: var(--cinnabar-red); border: 2px solid var(--cinnabar-red);
+            padding: 2px 8px; font-size: 0.9em; font-weight: 700; border-radius: 4px;
+            transform: rotate(-3deg); opacity: 0.85; letter-spacing: 2px; margin-left: 10px;
+        }
+
         .loading-container { text-align: center; margin-top: 20vh; }
         .yin-yang {
             width: 60px; height: 60px; margin: 0 auto 20px auto; border-radius: 50%;
@@ -270,56 +213,7 @@
         }
         .diff-badge { font-size: 0.85em; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
 
-  /* =========================================
-           ✨ 終極折衷方案：純 CSS 渲染信箋質感 (極致流暢且美觀)
-           ========================================= */
-      .article-wrap {
-            /* 1. 溫潤典雅的宣紙泛黃底色 (主容器只保留純色底與排版屬性) */
-            background-color: #f7f1e3; 
-            position: relative;
-            z-index: 1;
-            
-            /* 古典雅緻的雙層古籍邊框 */
-            border: 1px solid #dcd1be; 
-            outline: 1px solid #dcd1be;
-            outline-offset: -8px; 
-            padding: 50px 40px; 
-            margin: 20px auto 80px auto;
-            
-            /* 輕度溫和的紙張邊緣暗角內陰影 */
-            box-shadow: 
-                inset 0 0 45px rgba(160, 120, 60, 0.08), 
-                0 10px 30px rgba(0,0,0,0.06);
-            border-radius: 2px;
-            /* 🛑 刪除了 transition: padding 0.3s ease; */
-        }
-
-        /* ✨ 獨立效能層：將複雜濾鏡放在不干擾文字排版的偽元素中 */
-        .article-wrap::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: -1;
-            pointer-events: none;
-            
-            background-image: 
-                /* 2. 淡淡的造紙竹簾紋 (微細橫紋) */
-                repeating-linear-gradient(to bottom, transparent, transparent 5px, rgba(120, 90, 50, 0.025) 5px, rgba(120, 90, 50, 0.025) 6px),
-                /* 3. 純灰度造紙纖維 */
-                url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="paper"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(%23paper)" opacity="0.08"/></svg>'),
-                /* 4. 柔和自然的歲月泛黃漸層 */
-                linear-gradient(145deg, rgba(255, 255, 255, 0.5) 0%, rgba(180, 140, 90, 0.08) 100%);
-            
-            background-blend-mode: normal, multiply, normal;
-        }
-
-        /* 針對手機版微調邊距，保持版面精緻 */
-        @media (max-width: 849px) {
-            .article-wrap { 
-                padding: 30px 20px; 
-                outline-offset: -4px; 
-            }
-        }
+        .article-wrap { padding-bottom: 80px; transition: padding 0.3s ease; }
         .p-title { text-align: center; font-size: 2.4em; margin-bottom: 5px; font-weight: bold; letter-spacing: 3px; }
         .p-author { text-align: center; color: var(--ink-gray); margin-bottom: 20px; font-size: 1.2em; letter-spacing: 2px; }
         
@@ -358,7 +252,7 @@
         .fab-bar .icon-btn:hover { background: rgba(255,255,255,0.1); }
         .fab-bar svg { width: 22px; height: 22px; }
 
-    .overlay-panel {
+        .overlay-panel {
             position: fixed; background: var(--panel-bg);
             box-shadow: 0 0 25px rgba(0,0,0,0.2); z-index: 1001;
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -367,7 +261,6 @@
                 linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
                 linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
             background-size: 20px 20px;
-            will-change: transform; /* ✨ 提示手機瀏覽器使用 GPU 專心處理滑動 */
         }
         
         .panel-header {
@@ -464,18 +357,9 @@
                 transform: translateX(100%);
             }
             .overlay-panel.open { transform: translateX(0); }
-             /* 1. 取消平移，改為動態計算剩餘寬度並壓縮正文 */
-    body.panel-open .book-container { 
-        transform: none; 
-        margin-left: 2vw;
-        margin-right: calc(var(--panel-width) + 2vw);
-        max-width: calc(100vw - var(--panel-width) - 4vw);
-    }
-    
-    /* 2. 新增：讓底部的「注釋/譯文/賞析」懸浮按鈕，也能完美對齊剩餘空間的中心 */
-    body.panel-open .fab-bar {
-        left: calc((100vw - var(--panel-width)) / 2);
-    }
+            body.panel-open .book-container { 
+                transform: translateX(calc( -1 * (var(--panel-width) / 2 - 20px) )); 
+            }
             .panel-resizer {
                 position: absolute; top: 0; left: -5px; bottom: 0; width: 10px; cursor: ew-resize; z-index: 1002;
             }
@@ -485,27 +369,8 @@
         @media (max-width: 849px) {
             .book-container { margin: 0; min-height: 100vh; outline: none; border: none; box-shadow: none; }
             .book-page { padding: 20px 15px; }
-             /* 新增牌匾在手機端的縮放佈局 */
-            header {
-                margin: -20px -15px 35px -15px; /* 適應手機版邊距 */
-                padding: 30px 0;
-            }
-         h1.app-title { 
-                font-size: 2.2em; 
-                letter-spacing: 12px; 
-                padding-left: 25px;
-                margin: 0;
-                box-sizing: border-box;
-                justify-content: flex-start; /* ✨ 關鍵：僅在手機版靠左對齊 */
-            }
-            .stamp { 
-                font-size: 0.35em; 
-                padding: 12px 6px 6px 6px; 
-                transform: translateY(16px); 
-            }
-            .header-actions { right: 15px; gap: 8px; }
-            .header-btn { padding: 2px; }
-            .header-btn svg { width: 24px; height: 24px; }
+            h1.app-title { font-size: 1.8em; padding: 0 80px; box-sizing: border-box; }
+            .stamp { font-size: 0.7em; margin-left: 6px; vertical-align: middle; }
             .content-area { font-size: 1.3em; }
             
             .overlay-panel {
@@ -568,39 +433,16 @@
         .category-wrapper:hover .classic-book-card { transform: translateY(-8px) scale(1.02); box-shadow: 10px 15px 25px rgba(0,0,0,0.15); }
         .category-wrapper:hover .book-stamp { transform: scale(1.05); background: #fff9f0; box-shadow: 0 4px 10px rgba(167, 51, 34, 0.15); }
 
-     /* =========================================
-           ✨ 橫排信箋風格：一眼可見的粗糙造紙纖維與竹簾紋
-           ========================================= */
         /* =========================================
-   ✨ 橫排信箋風格：古典宣紙與細緻纖維質感（自然柔和版）
-   ========================================= */
-.article-wrap {
-    /* 1. 溫潤典雅的宣紙泛黃底色 */
-    background-color: #f7f1e3; 
-    background-image: 
-        /* 2. 淡淡的造紙竹簾紋 (微細橫紋) */
-        repeating-linear-gradient(to bottom, transparent, transparent 5px, rgba(120, 90, 50, 0.025) 5px, rgba(120, 90, 50, 0.025) 6px),
-        /* 3. 純灰度造紙纖維 (加入 saturate="0" 完全去除彩色雜訊，透明度降至柔和的 0.08) */
-        url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="paper"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(%23paper)" opacity="0.08"/></svg>'),
-        /* 4. 柔和自然的歲月泛黃漸層 */
-        linear-gradient(145deg, rgba(255, 255, 255, 0.5) 0%, rgba(180, 140, 90, 0.08) 100%);
-    
-    background-blend-mode: normal, multiply, normal;
-    
-    /* 古典雅緻的雙層古籍邊框 */
-    border: 1px solid #dcd1be; 
-    outline: 1px solid #dcd1be;
-    outline-offset: -8px; 
-    padding: 50px 40px; 
-    margin: 20px auto 80px auto;
-    
-    /* 輕度溫和的紙張邊緣暗角內陰影 */
-    box-shadow: 
-        inset 0 0 45px rgba(160, 120, 60, 0.08), 
-        0 10px 30px rgba(0,0,0,0.06);
-    transition: padding 0.3s ease; 
-    border-radius: 2px;
-}
+           ✨ 橫排信箋風格：沉浸式古籍閱讀體驗
+           ========================================= */
+        .article-wrap {
+            background-color: #fcf9f2; border: 2px solid var(--border-line); outline: 1px solid var(--border-line);
+            outline-offset: -6px; padding: 50px 40px; margin: 20px auto 80px auto;
+            box-shadow: inset 0 0 30px rgba(167, 51, 34, 0.03), 0 8px 20px rgba(0,0,0,0.06);
+            transition: padding 0.3s ease; border-radius: 2px;
+        }
+
         .p-title {
             text-align: center; font-size: 2.4em; font-weight: bold; letter-spacing: 6px; color: var(--ink-black);
             margin-bottom: 10px; position: relative;
@@ -691,28 +533,6 @@
             color: var(--ink-black);
         }
 
-        /* Iframe 檢索面板 */
-        .iframe-modal {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7); z-index: 4000;
-            display: none; justify-content: center; align-items: center;
-            animation: fadeIn 0.3s ease;
-        }
-        .iframe-modal.active { display: flex; }
-        .iframe-content {
-            background: var(--paper-bg); border: 2px solid var(--border-line);
-            border-radius: 6px; width: 95%; max-width: 900px; height: 85vh;
-            display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-        .iframe-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 20px; border-bottom: 2px solid var(--border-line); 
-            background: var(--panel-bg);
-        }
-        .iframe-header h3 { margin: 0; font-size: 1.3em; color: var(--ink-black); letter-spacing: 2px; }
-        .iframe-body { flex: 1; width: 100%; border: none; background: #fff; }
-
     </style>
 </head>
 <body>
@@ -720,7 +540,7 @@
 <div class="book-container">
     <div class="book-page">
         <header>
-            <h1 class="app-title">文言特訓</h1>
+            <h1 class="app-title">文言特訓<span class="stamp">神思</span></h1>
             
             <div class="header-actions">
                 <!-- 字詞庫按鈕 -->
@@ -799,10 +619,13 @@
                     <!-- 加入最愛按鈕 -->
                     <button id="btn-toggle-fav" class="icon-btn" onclick="toggleCurrentFavorite()" title="加入/移除最愛" style="border: none; padding: 6px;"></button>
                     <!-- 語音吟誦按鈕 -->
-                
+                    <button id="btn-tts" class="icon-btn btn-danger" onclick="toggleTTS()" title="吟誦此卷">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        吟誦
+                    </button>
                 </div>
             </div>
-         
+            <div id="progress-wrapper" class="progress-wrapper"><div class="progress-bar-bg"><div id="progress-bar-fill" class="progress-bar-fill"></div></div></div>
 
             <div class="article-wrap">
                 <div id="p-title" class="p-title"></div>
@@ -814,18 +637,8 @@
     </div>
 </div>
 
-<div id="search-popup" onclick="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
+<div id="search-popup" onmousedown="execGoogleSearch(event)" ontouchstart="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-</div>
-
-    <div id="iframe-search-modal" class="iframe-modal">
-    <div class="iframe-content">
-        <div class="iframe-header">
-            <h3 id="iframe-title">檢索解惑</h3>
-            <button class="panel-close" onclick="closeIframeSearch()">×</button>
-        </div>
-        <iframe id="search-iframe" class="iframe-body" src=""></iframe>
-    </div>
 </div>
 
 <!-- ✨ 新增：行內注釋懸浮提示窗 (Tooltip) -->
@@ -852,12 +665,7 @@
         <h3 id="panel-title">資料夾</h3>
         <button class="panel-close" onclick="closePanel()">×</button>
     </div>
-    <!-- ✨ 替換：改為三個獨立的隱藏容器，點擊時不用再重算 HTML -->
-    <div id="panel-body" class="panel-body">
-        <div id="content-remark" style="display: none;"></div>
-        <div id="content-translation" style="display: none;"></div>
-        <div id="content-shangxi" style="display: none;"></div>
-    </div>
+    <div id="panel-body" class="panel-body"></div>
 </div>
 
 <div id="quiz-modal" class="modal-overlay">
@@ -1438,41 +1246,42 @@
     }
 
     // 2. 在正文中搜尋字詞，並標記為高亮。使用 PUA 防替換衝突
-   // 2. 在正文中搜尋字詞，並標記為高亮。(極速單次替換版)
     function highlightVocabsInContent(contentStr, vocabs) {
-        if (!vocabs || vocabs.length === 0) return contentStr;
-
-        // 過濾空白並依長度遞減排序 (避免短詞搶走長詞，例如「天子」不能只配對到「天」)
-        let validVocabs = vocabs.filter(v => v.vocab && v.vocab.trim().length > 0);
-        validVocabs.sort((a, b) => b.vocab.length - a.vocab.length);
-
-        if (validVocabs.length === 0) return contentStr;
-
-        // 建立查表字典與 Regex 陣列
-        let vocabMap = new Map();
-        let regexParts = [];
-
-        validVocabs.forEach(item => {
-            if (!vocabMap.has(item.vocab)) {
-                vocabMap.set(item.vocab, item.exp);
-                // 處理特殊字元，避免正則表達式錯誤
-                regexParts.push(item.vocab.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        // 以字詞長度降序排列，避免「短詞」干擾「長詞」的高亮
+        let sorted = [...vocabs].sort((a, b) => b.vocab.length - a.vocab.length);
+        
+        let placeholders = [];
+        let processedText = contentStr;
+        
+        sorted.forEach((item, index) => {
+            if (item.vocab.length < 1) return;
+            
+            // 使用 Private Use Area 字符作為佔位符，保證絕不會與古文或英文字母衝突
+            let pKey = String.fromCharCode(0xE000 + index);
+            let safeVocab = item.vocab.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            let regex = new RegExp(safeVocab, 'g');
+            
+            if (regex.test(processedText)) {
+                processedText = processedText.replace(regex, pKey);
+                placeholders.push({
+                    key: pKey,
+                    vocab: item.vocab,
+                    exp: item.exp
+                });
             }
         });
-
-        // 組成單一且龐大的 Regex (例如：/長江|黃河|天子/g)
-        let combinedRegex = new RegExp(`(${regexParts.join('|')})`, 'g');
-
-        // 進行單次全域替換 (效能極大化，解決卡頓)
-        return contentStr.replace(combinedRegex, (match) => {
-            let exp = vocabMap.get(match);
-            if (!exp) return match; // 安全防護
-            let encVocab = encodeURIComponent(match);
-            let encExp = encodeURIComponent(exp);
-            return `<span class="inline-vocab" onclick="showVocabTooltip(event, '${encVocab}', '${encExp}')">${match}</span>`;
+        
+        // 將佔位符轉為帶有 onclick 事件的 HTML 元素
+        placeholders.forEach((p) => {
+            let encVocab = encodeURIComponent(p.vocab);
+            let encExp = encodeURIComponent(p.exp);
+            let span = `<span class="inline-vocab" onclick="showVocabTooltip(event, '${encVocab}', '${encExp}')">${p.vocab}</span>`;
+            processedText = processedText.replace(new RegExp(p.key, 'g'), span);
         });
+        
+        return processedText;
     }
-    
+
     // 3. 生成側邊面板用的注釋表格 (改為吃 List)
     function parseRemarksToTableFromList(vocabs) {
         let safeTitle = currentPoem ? safeConvert(currentPoem.title) : '未知';
@@ -1577,8 +1386,9 @@
 
     /* ======================================================== */
 
- function openDetail(p) {
+    function openDetail(p) {
         currentPoem = p;
+        stopTTS();
         closePanel(); 
         hideVocabTooltip();
         
@@ -1589,34 +1399,27 @@
         document.getElementById('p-title').innerText = title;
         document.getElementById('p-author').innerText = `〔${dyn}〕 ${writer}`;
 
-        // 1. 極速載入：先放入沒有注釋高亮的純淨文字，讓畫面 0 秒瞬間顯示
-        let rawContent = cleanClassicalContent(safeConvert(p.content));
-        document.getElementById('p-content-unified').innerHTML = wrapParagraphs(rawContent);
+        let transStr = removeBrackets(safeConvert(p.translation));
+        let remarkStr = safeConvert(p.remark);
+        let shangxiStr = removeBrackets(safeConvert(p.shangxi));
+
+        // ✨ 執行注釋提取與正文高亮替換
+        let extractedVocabs = extractVocabs(remarkStr);
+        let contentStr = cleanClassicalContent(safeConvert(p.content));
+        let highlightedContent = highlightVocabsInContent(contentStr, extractedVocabs);
+
+        // 將替換好的 HTML 放回 DOM
+        document.getElementById('p-content-unified').innerHTML = wrapParagraphs(highlightedContent);
+
+        // 更新各個面板的快取
+        cacheRemark = parseRemarksToTableFromList(extractedVocabs);
+        cacheTranslation = transStr ? `<div class="morandi-text">${wrapParagraphs(transStr)}</div>` : '<div class="empty">卷宗殘缺，暫無譯文</div>';
+        cacheShangxi = shangxiStr ? `<div class="morandi-text">${wrapParagraphs(shangxiStr)}</div>` : '<div class="empty">卷宗殘缺，暫無賞析</div>';
 
         updateFavIcon();
         document.getElementById('fab-bar').style.display = 'flex';
         showView('view-detail');
         window.scrollTo(0, 0);
-
-        // 2. 背景處理：利用 requestAnimationFrame 確保畫面切換流暢後，再於背景偷偷處理耗能運算
-        requestAnimationFrame(() => {
-            setTimeout(() => {
-                let transStr = removeBrackets(safeConvert(p.translation));
-                let remarkStr = safeConvert(p.remark);
-                let shangxiStr = removeBrackets(safeConvert(p.shangxi));
-
-                let extractedVocabs = extractVocabs(remarkStr);
-                
-                // 替換高亮文字（使用者視覺上只會看到文字瞬間多出虛線）
-                let highlightedContent = highlightVocabsInContent(rawContent, extractedVocabs);
-                document.getElementById('p-content-unified').innerHTML = wrapParagraphs(highlightedContent);
-
-                // ✨ 關鍵優化：將解析好的 HTML "預先" 塞入隱藏的 DOM 中
-                document.getElementById('content-remark').innerHTML = parseRemarksToTableFromList(extractedVocabs);
-                document.getElementById('content-translation').innerHTML = transStr ? `<div class="morandi-text">${wrapParagraphs(transStr)}</div>` : '<div class="empty">卷宗殘缺，暫無譯文</div>';
-                document.getElementById('content-shangxi').innerHTML = shangxiStr ? `<div class="morandi-text">${wrapParagraphs(shangxiStr)}</div>` : '<div class="empty">卷宗殘缺，暫無賞析</div>';
-            }, 50); // 延遲 50ms，讓手機專心把過場動畫跑完
-        });
     }
 
     function closePoem() {
@@ -1652,11 +1455,7 @@
         }
     }
 
-    // 宣告一個計時器變數，防止選取區消失時按鈕瞬間不見
-    let selectionTimeout;
-
     document.addEventListener('selectionchange', () => {
-        clearTimeout(selectionTimeout); // 只要還在選取，就清除隱藏倒數
         const popup = document.getElementById('search-popup');
         const selection = window.getSelection();
         const text = selection.toString().trim();
@@ -1671,34 +1470,21 @@
             popup.style.top = (window.pageYOffset + rect.bottom + 10) + 'px';
             popup.style.left = (window.pageXOffset + rect.left + (rect.width / 2) - 18) + 'px';
         } else {
-            // 加入 300 毫秒延遲，讓使用者點擊時，按鈕有足夠時間觸發 click 事件再隱藏
-            selectionTimeout = setTimeout(() => {
-                popup.style.display = 'none';
-                lastSelectedText = "";
-            }, 300);
+            popup.style.display = 'none';
+            lastSelectedText = "";
         }
     });
 
-   function execGoogleSearch(e) {
+    function execGoogleSearch(e) {
         if(e) { e.preventDefault(); e.stopPropagation(); }
         if(lastSelectedText) {
-            // 加入 &igu=1 嘗試讓 Google 允許 Iframe 嵌入
-            const searchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(`「${lastSelectedText}」 意思`) + '&igu=1';
-            
-            document.getElementById('iframe-title').innerText = `檢索：${lastSelectedText}`;
-            document.getElementById('search-iframe').src = searchUrl;
-            document.getElementById('iframe-search-modal').classList.add('active');
-            
+            window.open('https://www.google.com/search?q=' + encodeURIComponent(`「${lastSelectedText}」 意思`), 'GoogleSearch', 'width=600,height=600,top=100,left=200');
             window.getSelection().removeAllRanges();
             document.getElementById('search-popup').style.display = 'none';
             lastSelectedText = "";
         }
     }
 
-    function closeIframeSearch() {
-        document.getElementById('iframe-search-modal').classList.remove('active');
-        document.getElementById('search-iframe').src = ''; // 清空 src 釋放記憶體
-    }
     // 改寫：更新本機資料庫並同步所有快取 UI (Tooltip / 側邊面板)
     function toggleVocab(encVocab, encExp, btn) {
         let vocab = decodeURIComponent(encVocab);
@@ -1772,40 +1558,31 @@
         renderVocabBook();
     }
 
-  function openPanel(type) {
-        hideVocabTooltip();
+    function openPanel(type) {
+        hideVocabTooltip(); // 開啟側邊欄時自動隱藏懸浮窗
         const panel = document.getElementById('overlay-panel');
         const title = document.getElementById('panel-title');
+        const body = document.getElementById('panel-body');
         
-        // 先全部隱藏
-        document.getElementById('content-remark').style.display = 'none';
-        document.getElementById('content-translation').style.display = 'none';
-        document.getElementById('content-shangxi').style.display = 'none';
-
         if (type === 'remark') {
             title.innerText = '注釋解析';
-            document.getElementById('content-remark').style.display = 'block';
+            body.innerHTML = cacheRemark;
         } else if (type === 'translation') {
             title.innerText = '白話譯文';
-            document.getElementById('content-translation').style.display = 'block';
+            body.innerHTML = cacheTranslation;
         } else if (type === 'shangxi') {
             title.innerText = '賞析點評';
-            document.getElementById('content-shangxi').style.display = 'block';
+            body.innerHTML = cacheShangxi;
         }
         
-        document.getElementById('panel-body').scrollTop = 0;
-        
-        // ✨ 關鍵優化：將動畫觸發推遲到下一幀，避免 DOM 渲染與 CSS 動畫互搶資源導致掉幀
-        requestAnimationFrame(() => {
-            panel.classList.add('open');
-            document.body.classList.add('panel-open');
-        });
+        panel.classList.add('open');
+        document.body.classList.add('panel-open');
+        body.scrollTop = 0;
     }
 
     function closePanel() {
         document.getElementById('overlay-panel').classList.remove('open');
         document.body.classList.remove('panel-open');
-        // 關閉時不再清空 HTML 內容，保留在記憶體裡，反覆打開都會極度絲滑
     }
 
     function showView(viewId) {
