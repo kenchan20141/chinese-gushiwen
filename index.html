@@ -269,7 +269,10 @@
         }
         .diff-badge { font-size: 0.85em; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
 
-        .article-wrap { padding-bottom: 80px; transition: padding 0.3s ease; }
+  .article-wrap { 
+            padding-bottom: 80px; 
+            /* 刪除了原來的 transition: padding 0.3s ease; */
+        }
         .p-title { text-align: center; font-size: 2.4em; margin-bottom: 5px; font-weight: bold; letter-spacing: 3px; }
         .p-author { text-align: center; color: var(--ink-gray); margin-bottom: 20px; font-size: 1.2em; letter-spacing: 2px; }
         
@@ -308,7 +311,7 @@
         .fab-bar .icon-btn:hover { background: rgba(255,255,255,0.1); }
         .fab-bar svg { width: 22px; height: 22px; }
 
-        .overlay-panel {
+    .overlay-panel {
             position: fixed; background: var(--panel-bg);
             box-shadow: 0 0 25px rgba(0,0,0,0.2); z-index: 1001;
             transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -317,6 +320,7 @@
                 linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
                 linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
             background-size: 20px 20px;
+            will-change: transform; /* ✨ 提示手機瀏覽器使用 GPU 專心處理滑動 */
         }
         
         .panel-header {
@@ -1713,36 +1717,47 @@
         renderVocabBook();
     }
 
-   function openPanel(type) {
-        hideVocabTooltip();
+  function openPanel(type) {
+        hideVocabTooltip(); // 開啟側邊欄時自動隱藏懸浮窗
         const panel = document.getElementById('overlay-panel');
         const title = document.getElementById('panel-title');
         const body = document.getElementById('panel-body');
         
-        // 先執行 CSS 抽屜滑出動畫
+        // 1. 設定標題
+        if (type === 'remark') title.innerText = '注釋解析';
+        else if (type === 'translation') title.innerText = '白話譯文';
+        else if (type === 'shangxi') title.innerText = '賞析點評';
+        
+        // 2. 先放入極輕量的「載入中」提示，絕不阻塞主線程
+        body.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--ink-gray); letter-spacing: 2px;">展開中...</div>';
+        
+        // 3. 立即觸發 CSS 抽屜滑出動畫 (此時完全不卡頓)
         panel.classList.add('open');
         document.body.classList.add('panel-open');
-        body.innerHTML = '<div class="empty">載入中...</div>';
         
-        // 延遲渲染龐大的 DOM 結構，避免抽屜滑出時卡頓
+        // 4. ✨ 關鍵：等待 400 毫秒（等面板「完全滑出定格」後），才塞入龐大的表格資料
         setTimeout(() => {
             if (type === 'remark') {
-                title.innerText = '注釋解析';
                 body.innerHTML = cacheRemark;
             } else if (type === 'translation') {
-                title.innerText = '白話譯文';
                 body.innerHTML = cacheTranslation;
             } else if (type === 'shangxi') {
-                title.innerText = '賞析點評';
                 body.innerHTML = cacheShangxi;
             }
             body.scrollTop = 0;
-        }, 150);
+        }, 400); 
     }
 
     function closePanel() {
-        document.getElementById('overlay-panel').classList.remove('open');
-        document.body.classList.remove('panel-open');
+        const panel = document.getElementById('overlay-panel');
+        // 1. 觸發收回動畫
+        panel.classList.remove('open');
+        
+        // 2. ✨ 關鍵：等待 400 毫秒（等面板「完全收回」後），再調整排版與清空記憶體
+        setTimeout(() => {
+            document.body.classList.remove('panel-open');
+            document.getElementById('panel-body').innerHTML = ''; // 清空龐大 DOM 釋放記憶體
+        }, 400);
     }
 
     function showView(viewId) {
