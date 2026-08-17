@@ -791,7 +791,7 @@
 <div id="iframe-modal" class="iframe-modal-overlay">
     <div class="iframe-modal-content">
         <div class="iframe-modal-header">
-            <h3 id="iframe-title">詞句解釋</h3>
+            <h3 id="iframe-title">詞句釋義</h3>
             <button class="panel-close" onclick="closeIframeModal()">×</button>
         </div>
         <div class="iframe-modal-body">
@@ -1599,7 +1599,7 @@ function execGoogleSearch(e) {
         const title = document.getElementById('iframe-title');
         
         // 更新標題
-        title.innerText = `Google 搜尋：「${lastSelectedText}」`;
+        title.innerText = `詞句釋義：「${lastSelectedText}」`;
         
         // 保持你要求的 Google 搜尋，並加上 &igu=1 參數防止 Google 阻擋 iframe
         const searchUrl = 'https://www.google.com/search?igu=1&q=' + encodeURIComponent(`「${lastSelectedText}」 意思`);
