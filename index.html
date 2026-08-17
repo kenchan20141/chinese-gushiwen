@@ -437,15 +437,32 @@
      
         </div>
 
+       <!-- 1. 修改原本的首頁 (view-categories) -->
         <div id="view-categories" class="view">
-            <h2 style="text-align:center; letter-spacing: 4px; border-bottom: 1px solid #ccc; display:inline-block; margin: 0 auto; padding-bottom: 10px;">朝代卷宗</h2>
+            <h2 style="text-align:center; letter-spacing: 4px; border-bottom: 1px solid #ccc; display:inline-block; margin: 0 auto; padding-bottom: 10px;">經典卷宗</h2>
             <div style="text-align:center;"><br></div>
+            <!-- 注意這裡的 ID 改為 main-category-grid -->
+            <div id="main-category-grid" class="grid"></div>
+        </div>
+
+        <!-- 2. 新增一個「歷代詩文」的次選單 (view-sub-dynasties) -->
+        <div id="view-sub-dynasties" class="view">
+            <div class="toolbar">
+                <button class="icon-btn" onclick="showView('view-categories')" title="返回主目錄">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                <h2 style="margin:0; letter-spacing: 4px;">歷代詩文</h2>
+                <div style="width: 50px;"></div>
+            </div>
+            <!-- 原本朝代生成的 grid 放在這裡 -->
             <div id="dynasty-grid" class="grid"></div>
         </div>
 
+        <!-- 3. 修改 view-list 裡面的「返回」按鈕 -->
         <div id="view-list" class="view">
             <div class="toolbar">
-                <button class="icon-btn" onclick="showView('view-categories')" title="返回卷宗">
+                <!-- 將原本的 onclick="showView('view-categories')" 改為 onclick="goBackFromList()" -->
+                <button class="icon-btn" onclick="goBackFromList()" title="返回">
                     <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 </button>
                 <h2 id="list-title" style="margin:0; letter-spacing: 2px;"></h2>
@@ -563,6 +580,7 @@
 </div>
 
 <script>
+    let currentOpenedCategory = "";
    const dynastyOrder = ["古文觀止","先秦","秦代","漢代","兩漢","魏晉","南北朝","隋代","唐代","五代","宋代","金朝","遼代","元代","明代","清代","近代","現代","未知"];
     const fileUrls = [
     "guwenguanzhi_converted.json", // <--- 加上這行
@@ -1397,23 +1415,72 @@ function correctClassicalChinese(twText) {
         return lines.map(line => `<p>${line}</p>`).join('');
     }
 
-  function renderCategories() {
+ // 1. 取代原本的 renderCategories
+    function renderCategories() {
+        const mainGrid = document.getElementById('main-category-grid');
+        mainGrid.innerHTML = '';
+
+        // 生成「古文觀止」卡片
+        if (db["古文觀止"] && db["古文觀止"].length > 0) {
+            const btn1 = document.createElement('div');
+            btn1.className = 'card-btn';
+            btn1.innerHTML = `<h3>古文觀止</h3><p>${db["古文觀止"].length} 卷</p>`;
+            btn1.onclick = () => {
+                currentOpenedCategory = "古文觀止";
+                openDynasty("古文觀止");
+            };
+            mainGrid.appendChild(btn1);
+        }
+
+        // 計算歷代詩文的總卷數 (排除古文觀止與不要顯示的)
+        let totalPoetry = 0;
+        const excludedForPoetry = ["古文觀止", "近代", "現代", "未知"];
+        Object.keys(db).forEach(dyn => {
+            if (!excludedForPoetry.includes(dyn)) {
+                totalPoetry += db[dyn].length;
+            }
+        });
+
+        // 生成「歷代詩文」卡片
+        if (totalPoetry > 0) {
+            const btn2 = document.createElement('div');
+            btn2.className = 'card-btn';
+            btn2.innerHTML = `<h3>歷代詩文</h3><p>${totalPoetry} 卷</p>`;
+            btn2.onclick = () => openSubDynasties();
+            mainGrid.appendChild(btn2);
+        }
+    }
+
+    // 2. 新增：渲染第二層「歷代朝代」選單的邏輯
+    function openSubDynasties() {
         const grid = document.getElementById('dynasty-grid');
         grid.innerHTML = '';
         const sorted = Object.keys(db).sort((a, b) => (dynastyOrder.indexOf(a) !== -1 ? dynastyOrder.indexOf(a) : 999) - (dynastyOrder.indexOf(b) !== -1 ? dynastyOrder.indexOf(b) : 999));
 
-        // 建立要隱藏的朝代清單
-        const hiddenDynasties = ["近代", "現代", "未知"];
+        // 隱藏名單加上「古文觀止」，避免它出現在歷代詩文裡
+        const hiddenDynasties = ["古文觀止", "近代", "現代", "未知"];
 
         for (let dyn of sorted) {
-            // 如果該朝代沒有文章，或者是屬於要隱藏的朝代，則跳過不顯示
             if (db[dyn].length === 0 || hiddenDynasties.includes(dyn)) continue; 
             
             const btn = document.createElement('div');
             btn.className = 'card-btn';
-            btn.innerHTML = `<h3>${dyn}</h3><p>長篇 ${db[dyn].length} 卷</p>`;
-            btn.onclick = () => openDynasty(dyn);
+            btn.innerHTML = `<h3>${dyn}</h3><p>${db[dyn].length} 卷</p>`;
+            btn.onclick = () => {
+                currentOpenedCategory = "歷代詩文"; // 標記是從歷代詩文點進去的
+                openDynasty(dyn);
+            };
             grid.appendChild(btn);
+        }
+        showView('view-sub-dynasties');
+    }
+
+    // 3. 新增：處理文章列表頁的「返回邏輯」
+    function goBackFromList() {
+        if (currentOpenedCategory === "歷代詩文") {
+            showView('view-sub-dynasties'); // 如果是從歷代詩文進來的，退回歷代詩文
+        } else {
+            showView('view-categories');    // 否則（古文觀止、我的最愛）退回主選單
         }
     }
     function generateDifficultyAndSort(poemsArray) {
@@ -1517,7 +1584,9 @@ function correctClassicalChinese(twText) {
         showView('view-list');
     }
 
-    function openFavorites() {
+function openFavorites() {
+        currentOpenedCategory = "我的最愛"; // 加入這行
+        
         if (favorites.length === 0) {
             alert("您尚未加入任何最愛篇章。");
             return;
