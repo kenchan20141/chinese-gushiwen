@@ -38,21 +38,17 @@
             overscroll-behavior: none;
         }
 
-      .book-container {
-    max-width: 900px; 
-    margin: 30px auto; 
-    background: #faf4e3;
-    border: 1px solid var(--border-line);
-    outline: 3px solid var(--border-line);
-    outline-offset: -8px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-    min-height: 90vh; 
-    position: relative;
-    animation: unfoldScroll 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    
-    /* ⚠️ 核心修復：絕對不要用 all，只允許 transform 和 opacity 進行動畫 */
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
+        .book-container {
+            max-width: 900px; margin: 30px auto; 
+            background: #faf4e3;
+            border: 1px solid var(--border-line);
+            outline: 3px solid var(--border-line);
+            outline-offset: -8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            min-height: 90vh; position: relative;
+            animation: unfoldScroll 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            transition: all 0.3s ease;
+        }
 
         @keyframes unfoldScroll {
             0% { transform: scaleX(0.01); opacity: 0; }
@@ -273,36 +269,37 @@
         }
         .diff-badge { font-size: 0.85em; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
 
- /* =========================================
-   ✨ 橫排信箋風格：高效能純 CSS 宣紙質感 (極致流暢版)
-   ========================================= */
-.article-wrap {
-    /* 1. 溫潤典雅的宣紙泛黃底色 */
-    background-color: #f7f1e3; 
-    
-    background-image: 
-        /* 2. 淡淡的造紙竹簾紋 (微細橫紋，效能開銷極低) */
-        repeating-linear-gradient(to bottom, transparent, transparent 5px, rgba(120, 90, 50, 0.025) 5px, rgba(120, 90, 50, 0.025) 6px),
-        /* 3. 柔和自然的歲月泛黃漸層 */
-        linear-gradient(145deg, rgba(255, 255, 255, 0.5) 0%, rgba(180, 140, 90, 0.08) 100%);
-    
-    /* ⚠️ 核心修復：移除 background-blend-mode 和 SVG，改為純粹的背景疊加 */
-    
-    /* 古典雅緻的雙層古籍邊框 */
-    border: 1px solid #dcd1be; 
-    outline: 1px solid #dcd1be;
-    outline-offset: -8px; 
-    padding: 50px 40px; 
-    margin: 20px auto 80px auto;
-    
-    /* 輕度溫和的紙張邊緣暗角內陰影 */
-    box-shadow: 
-        inset 0 0 45px rgba(160, 120, 60, 0.08), 
-        0 10px 30px rgba(0,0,0,0.06);
-    
-    /* ⚠️ 核心修復：移除 transition: padding 0.3s ease; 避免滾動或縮放時觸發重排 */
-    border-radius: 2px;
-}
+  /* =========================================
+           ✨ 終極折衷方案：純 CSS 渲染信箋質感 (極致流暢且美觀)
+           ========================================= */
+        .article-wrap {
+            /* 1. 溫潤典雅的宣紙底色 */
+            background-color: #f7f1e3; 
+            
+            background-image: 
+                /* 2. 模擬歲月痕跡：四周微微泛黃的暗角 (極低效能消耗) */
+                radial-gradient(circle at 50% 50%, transparent 60%, rgba(140, 100, 50, 0.08) 150%),
+                /* 3. 模擬竹簾紋理：細緻的等距橫紋 (純 CSS 渲染，0 負擔) */
+                repeating-linear-gradient(to bottom, transparent, transparent 4px, rgba(140, 100, 50, 0.04) 4px, rgba(140, 100, 50, 0.04) 5px),
+                /* 4. 光澤漸層：增加紙張整體的立體感與溫度 */
+                linear-gradient(145deg, rgba(255, 255, 255, 0.6) 0%, rgba(200, 170, 120, 0.1) 100%);
+            
+            /* 將多層色彩柔和疊加 */
+            background-blend-mode: multiply;
+            
+            /* 古典雅緻的雙層古籍邊框 */
+            border: 1px solid #dcd1be; 
+            outline: 1px solid #dcd1be;
+            outline-offset: -8px; 
+            padding: 50px 40px; 
+            margin: 20px auto 80px auto;
+            
+            /* 輕度溫和的紙張邊緣內陰影與外陰影 */
+            box-shadow: 
+                inset 0 0 40px rgba(160, 120, 60, 0.05), 
+                0 8px 25px rgba(0,0,0,0.05);
+            border-radius: 2px;
+        }
 
         /* 針對手機版微調邊距，保持版面精緻 */
         @media (max-width: 849px) {
@@ -448,24 +445,20 @@
             opacity: 0.8; background-color: var(--cinnabar-red);
         }
 
-       @media (min-width: 850px) {
-    /* 面板本身滑動，這個沒問題，因為用了 transform */
-    .overlay-panel {
-        top: 0; right: 0; bottom: 0; width: var(--panel-width);
-        border-left: 2px solid var(--border-line);
-        transform: translateX(100%);
-    }
-    .overlay-panel.open { transform: translateX(0); }
-    
-    /* ⚠️ 因為我們在修訂一移除了 transition: all，
-       這裡 max-width 和 margin 的改變會是瞬間完成的，文字會瞬間重排一次，不會卡頓 0.3 秒 */
+        @media (min-width: 850px) {
+            .overlay-panel {
+                top: 0; right: 0; bottom: 0; width: var(--panel-width);
+                border-left: 2px solid var(--border-line);
+                transform: translateX(100%);
+            }
+            .overlay-panel.open { transform: translateX(0); }
+             /* 1. 取消平移，改為動態計算剩餘寬度並壓縮正文 */
     body.panel-open .book-container { 
         transform: none; 
         margin-left: 2vw;
         margin-right: calc(var(--panel-width) + 2vw);
         max-width: calc(100vw - var(--panel-width) - 4vw);
     }
-}
     
     /* 2. 新增：讓底部的「注釋/譯文/賞析」懸浮按鈕，也能完美對齊剩餘空間的中心 */
     body.panel-open .fab-bar {
