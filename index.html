@@ -533,6 +533,56 @@
             color: var(--ink-black);
         }
 
+/* =========================================
+   ✨ 新增：Google Iframe 彈出視窗樣式
+   ========================================= */
+.iframe-modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6); z-index: 4000;
+    display: none; justify-content: center; align-items: center;
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.3s ease;
+}
+.iframe-modal-overlay.active { display: flex; }
+
+.iframe-modal-content {
+    background: var(--panel-bg); 
+    border: 2px solid var(--border-line);
+    border-radius: 8px; 
+    width: 90%; 
+    max-width: 800px; 
+    height: 80vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4); 
+    overflow: hidden;
+    background-image: 
+        linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
+        linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.iframe-modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 20px; 
+    border-bottom: 2px dashed var(--border-line);
+    background: rgba(255,255,255,0.3);
+}
+
+.iframe-modal-header h3 { 
+    margin: 0; font-size: 1.3em; letter-spacing: 2px; color: var(--ink-black); 
+}
+
+.iframe-modal-body { 
+    flex: 1; position: relative; 
+    background: #fff; /* 內部用純白底，讓 Google 網頁顯示正常 */
+}
+
+#search-iframe { 
+    width: 100%; height: 100%; border: none; display: block; 
+}
+
+
+        
     </style>
 </head>
 <body>
@@ -695,6 +745,21 @@
     </div>
 </div>
 
+
+    <!-- ✨ 新增：內嵌查詞的 Iframe 彈出視窗 -->
+<!-- ✨ 新增：Google 搜尋專用 Iframe 彈出視窗 -->
+<div id="iframe-modal" class="iframe-modal-overlay">
+    <div class="iframe-modal-content">
+        <div class="iframe-modal-header">
+            <h3 id="iframe-title">詞句解釋</h3>
+            <button class="panel-close" onclick="closeIframeModal()">×</button>
+        </div>
+        <div class="iframe-modal-body">
+            <iframe id="search-iframe" src="" title="Google Search"></iframe>
+        </div>
+    </div>
+</div>
+
 <script>
     let currentOpenedCategory = "";
     const dynastyOrder = ["古文觀止","先秦","秦代","漢代","兩漢","魏晉","南北朝","隋代","唐代","五代","宋代","金朝","遼代","元代","明代","清代","近代","現代","未知"];
@@ -796,16 +861,19 @@
         return text.trim();
     }
 
-    function initPanelResize() {
+   function initPanelResize() {
         let isResizing = false;
         let startY, startX, startHeight, startWidth;
         const resizer = document.getElementById('panel-resizer');
 
         resizer.addEventListener('mousedown', initDrag);
+        // 使用 {passive: false} 讓 touchstart 可以 preventDefault
         resizer.addEventListener('touchstart', initDrag, {passive: false});
 
         function initDrag(e) {
-            e.preventDefault();
+            e.preventDefault();  // 阻止預設行為
+            e.stopPropagation(); // 阻止事件冒泡到背景
+            
             isResizing = true;
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -824,6 +892,12 @@
 
         function doDrag(e) {
             if (!isResizing) return;
+            
+            // ✨ 關鍵修復：在拖曳過程中阻擋瀏覽器預設的背景捲動
+            if (e.cancelable) {
+                e.preventDefault();
+            }
+            
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
@@ -851,7 +925,6 @@
             localStorage.setItem('panel-height', document.documentElement.style.getPropertyValue('--panel-height'));
         }
     }
-
     function correctClassicalChinese(twText) {
         if (!twText) return "";
         twText = twText.replace(/(^|[「『（(【《〈“‘，。！？、；：\s>—])餘/g, '$1余');
@@ -1475,15 +1548,41 @@
         }
     });
 
-    function execGoogleSearch(e) {
-        if(e) { e.preventDefault(); e.stopPropagation(); }
-        if(lastSelectedText) {
-            window.open('https://www.google.com/search?q=' + encodeURIComponent(`「${lastSelectedText}」 意思`), 'GoogleSearch', 'width=600,height=600,top=100,left=200');
-            window.getSelection().removeAllRanges();
-            document.getElementById('search-popup').style.display = 'none';
-            lastSelectedText = "";
-        }
+   // 替換原本的 execGoogleSearch 函式
+// 替換原本的 execGoogleSearch 函式
+function execGoogleSearch(e) {
+    if(e) { e.preventDefault(); e.stopPropagation(); }
+    if(lastSelectedText) {
+        // 抓取彈窗的元素
+        const modal = document.getElementById('iframe-modal');
+        const iframe = document.getElementById('search-iframe');
+        const title = document.getElementById('iframe-title');
+        
+        // 更新標題
+        title.innerText = `Google 搜尋：「${lastSelectedText}」`;
+        
+        // 保持你要求的 Google 搜尋，並加上 &igu=1 參數防止 Google 阻擋 iframe
+        const searchUrl = 'https://www.google.com/search?igu=1&q=' + encodeURIComponent(`「${lastSelectedText}」 意思`);
+        
+        // 載入網址並開啟彈窗
+        iframe.src = searchUrl;
+        modal.classList.add('active');
+        
+        // 隱藏反白狀態與懸浮按鈕
+        window.getSelection().removeAllRanges();
+        document.getElementById('search-popup').style.display = 'none';
+        lastSelectedText = "";
     }
+}
+
+// ✨ 新增：關閉 iframe 彈窗功能
+function closeIframeModal() {
+    document.getElementById('iframe-modal').classList.remove('active');
+    // 清空 src 釋放資源，避免關閉後背景仍佔用網路
+    setTimeout(() => {
+        document.getElementById('search-iframe').src = "";
+    }, 300);
+}
 
     // 改寫：更新本機資料庫並同步所有快取 UI (Tooltip / 側邊面板)
     function toggleVocab(encVocab, encExp, btn) {
