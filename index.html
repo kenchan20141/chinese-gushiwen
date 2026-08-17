@@ -1647,13 +1647,30 @@
         });
     }
 
-    let synth = window.speechSynthesis;
+   let synth = window.speechSynthesis;
     let currentUtterance = null;
     
+    // ======== 新增：手機端音訊解鎖機制 ========
+    let ttsUnlocked = false;
+    function unlockTTS() {
+        if (!ttsUnlocked) {
+            let silentUtterance = new SpeechSynthesisUtterance('');
+            silentUtterance.volume = 0; // 靜音
+            synth.speak(silentUtterance);
+            ttsUnlocked = true;
+            window.removeEventListener('touchstart', unlockTTS);
+            window.removeEventListener('click', unlockTTS);
+        }
+    }
+    // 監聽用戶的第一次點擊或觸摸來解鎖
+    window.addEventListener('touchstart', unlockTTS, { once: true });
+    window.addEventListener('click', unlockTTS, { once: true });
+    // =========================================
+
     const playSvg = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 吟誦`;
     const stopSvg = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><rect x="6" y="6" width="12" height="12"></rect></svg> 停止`;
 
-    function toggleTTS() {
+   function toggleTTS() {
         const btn = document.getElementById('btn-tts');
         const pWrapper = document.getElementById('progress-wrapper');
         const pBar = document.getElementById('progress-bar-fill');
@@ -1662,36 +1679,51 @@
             stopTTS();
         } else {
             if (!currentPoem) return;
-            // 替換掉 HTML tag (如 Tooltip span)，只讀純文字
+            
+            // 立即變更 UI，讓用戶知道有反應（不要等 onstart，手機上 onstart 常常會遲到）
+            btn.style.backgroundColor = 'var(--cinnabar-red)';
+            btn.style.color = 'var(--paper-bg)';
+            btn.innerHTML = stopSvg;
+            pWrapper.style.display = 'block';
+            pBar.style.width = '0%';
+
             let rawContent = removeBrackets(cleanClassicalContent(safeConvert(currentPoem.content)));
             let textToRead = safeConvert(currentPoem.title) + "。" + 
                              safeConvert(currentPoem.writer) + "。" + 
                              rawContent.replace(/<[^>]+>/g, '').replace(/\n/g, '。');
             
-            currentUtterance = new SpeechSynthesisUtterance(textToRead);
-            currentUtterance.lang = 'zh-TW';
-            currentUtterance.rate = 0.8; 
-            
-            currentUtterance.onstart = () => {
-                btn.style.backgroundColor = 'var(--cinnabar-red)';
-                btn.style.color = 'var(--paper-bg)';
-                btn.innerHTML = stopSvg;
-                pWrapper.style.display = 'block';
-                pBar.style.width = '0%';
-            };
-            
-            currentUtterance.onboundary = (event) => {
-                if (event.name === 'word' || event.name === 'sentence') {
-                    let percent = Math.floor((event.charIndex / textToRead.length) * 100);
-                    if (percent > 100) percent = 100;
-                    pBar.style.width = percent + '%';
-                }
-            };
+            // 確保之前沒有卡住的語音
+            synth.cancel(); 
 
-            currentUtterance.onend = () => stopTTS();
-            currentUtterance.onerror = () => stopTTS();
-            
-            synth.speak(currentUtterance);
+            // 設定延遲，給手機瀏覽器緩衝時間
+            setTimeout(() => {
+                currentUtterance = new SpeechSynthesisUtterance(textToRead);
+                currentUtterance.lang = 'zh-TW';
+                currentUtterance.rate = 0.8; 
+                
+                // 強制尋找手機內建的中文語音 (解決 iOS 找不到預設聲音的問題)
+                let voices = synth.getVoices();
+                let zhVoice = voices.find(v => v.lang.includes('zh-TW') || v.lang.includes('zh-HK') || v.lang.includes('zh-CN'));
+                if (zhVoice) {
+                    currentUtterance.voice = zhVoice;
+                }
+                
+                currentUtterance.onboundary = (event) => {
+                    if (event.name === 'word' || event.name === 'sentence') {
+                        let percent = Math.floor((event.charIndex / textToRead.length) * 100);
+                        if (percent > 100) percent = 100;
+                        pBar.style.width = percent + '%';
+                    }
+                };
+
+                currentUtterance.onend = () => stopTTS();
+                currentUtterance.onerror = (e) => {
+                    console.error("TTS Error:", e);
+                    stopTTS();
+                };
+                
+                synth.speak(currentUtterance);
+            }, 100);
         }
     }
 
