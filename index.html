@@ -389,6 +389,27 @@
             }
             .resizer-line { top: 6px; left: 50%; width: 40px; height: 4px; transform: translateX(-50%); }
         }
+
+
+
+@media (max-width: 849px) {
+    /* ...保留原本其他的設定... */
+    
+    /* 1. 修改這行：將字體稍微縮小，並加入左右 padding 讓出空間給按鈕 */
+    h1.app-title { 
+        font-size: 1.8em; 
+        padding: 0 80px; /* 左右保留 80px 空間避免與 SVG 按鈕重疊 */
+        box-sizing: border-box;
+    }
+    
+    /* 2. 新增這行：將手機版的印章等比例縮小，並微調間距 */
+    .stamp { 
+        font-size: 0.7em; 
+        margin-left: 6px; 
+        vertical-align: middle; 
+    }
+}
+        
     </style>
 </head>
 <body>
@@ -608,9 +629,21 @@
                     let rawContent = cleanClassicalContent(safeConvert(p.content || "")).replace(/[\s\r\n]/g, '');
                     if (rawContent.length <= 100) continue;
 
-                    let dyn = safeConvert(p.dynasty || "未知");
-                    if (!db[dyn]) db[dyn] = [];
-                    db[dyn].push(p);
+                  let dyn = safeConvert(p.dynasty || "未知");
+if (!db[dyn]) db[dyn] = [];
+
+// 新增去重邏輯：檢查當前朝代中是否已有相同篇名與作者的文章
+let currentTitle = safeConvert(p.title || "");
+let currentWriter = safeConvert(p.writer || "");
+let isDuplicate = db[dyn].some(existing => {
+    return safeConvert(existing.title || "") === currentTitle && 
+           safeConvert(existing.writer || "") === currentWriter;
+});
+
+// 只有在不是重複文章的情況下，才將其加入陣列
+if (!isDuplicate) {
+    db[dyn].push(p);
+}
                 } catch(e) {}
             }
             renderCategories();
