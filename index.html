@@ -921,10 +921,10 @@
         return text.trim();
     }
 
-   function initPanelResize() {
+ function initPanelResize() {
         let isResizing = false;
         let startY, startX, startHeight, startWidth;
-        let dragRAF = null; // 用於限流確保渲染不卡頓
+        let dragRAF = null; 
         const resizer = document.getElementById('panel-resizer');
 
         resizer.addEventListener('mousedown', initDrag);
@@ -933,7 +933,7 @@
         function initDrag(e) {
             e.preventDefault();
             isResizing = true;
-            document.body.classList.add('is-resizing'); // 拖曳時瞬間停用所有延遲動畫
+            document.body.classList.add('is-resizing'); 
 
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -943,6 +943,9 @@
             const panel = document.getElementById('overlay-panel');
             startWidth = panel.offsetWidth;
             startHeight = panel.offsetHeight;
+            
+            // ✨ 關閉面板過渡動畫，準備使用行內樣式，避免拖曳時觸發整頁古文回流
+            panel.style.transition = 'none';
 
             document.addEventListener('mousemove', doDrag);
             document.addEventListener('touchmove', doDrag, {passive: false});
@@ -953,30 +956,49 @@
         function doDrag(e) {
             if (!isResizing) return;
             
-            if (dragRAF) cancelAnimationFrame(dragRAF); // 清除尚未執行的幀，防止效能堆疊
+            if (dragRAF) cancelAnimationFrame(dragRAF); 
             
             dragRAF = requestAnimationFrame(() => {
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const panel = document.getElementById('overlay-panel');
                 
                 if (window.innerWidth >= 850) {
                     let newWidth = startWidth - (clientX - startX);
                     if(newWidth < 250) newWidth = 250; 
                     if(newWidth > window.innerWidth * 0.8) newWidth = window.innerWidth * 0.8; 
-                    document.documentElement.style.setProperty('--panel-width', newWidth + 'px');
+                    // ✨ 僅改變面板本身的寬度，不修改全域變數，防止背景排版每幀重算
+                    panel.style.width = newWidth + 'px';
                 } else {
                     let newHeight = startHeight - (clientY - startY);
                     if(newHeight < window.innerHeight * 0.15) newHeight = window.innerHeight * 0.15;
                     if(newHeight > window.innerHeight * 0.9) newHeight = window.innerHeight * 0.9;
-                    document.documentElement.style.setProperty('--panel-height', newHeight + 'px');
+                    // ✨ 僅改變面板本身的高度
+                    panel.style.height = newHeight + 'px';
                 }
             });
         }
 
         function stopDrag() {
             isResizing = false;
-            document.body.classList.remove('is-resizing'); // 拖曳結束恢復頁面動畫
+            document.body.classList.remove('is-resizing'); 
             if (dragRAF) cancelAnimationFrame(dragRAF);
+
+            const panel = document.getElementById('overlay-panel');
+            panel.style.transition = ''; // 恢復 CSS 過渡動畫控制
+            
+            // ✨ 拖曳放開時，才將最終結果寫入全域變數，進行唯一一次的頁面重排
+            if (window.innerWidth >= 850) {
+                if (panel.style.width) {
+                    document.documentElement.style.setProperty('--panel-width', panel.style.width);
+                    panel.style.width = ''; // 清除行內樣式，交還給 CSS 變數接管
+                }
+            } else {
+                if (panel.style.height) {
+                    document.documentElement.style.setProperty('--panel-height', panel.style.height);
+                    panel.style.height = ''; // 清除行內樣式，交還給 CSS 變數接管
+                }
+            }
 
             document.removeEventListener('mousemove', doDrag);
             document.removeEventListener('touchmove', doDrag);
@@ -987,6 +1009,8 @@
             localStorage.setItem('panel-height', document.documentElement.style.getPropertyValue('--panel-height'));
         }
     }
+
+    
     function correctClassicalChinese(twText) {
         if (!twText) return "";
         twText = twText.replace(/(^|[「『（(【《〈“‘，。！？、；：\s>—])餘/g, '$1余');
