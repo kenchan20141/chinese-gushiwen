@@ -351,18 +351,13 @@
         .fab-bar .icon-btn:hover { background: rgba(255,255,255,0.1); }
         .fab-bar svg { width: 22px; height: 22px; }
 
-    .overlay-panel {
-            position: fixed; background: var(--panel-bg);
-            box-shadow: 0 0 25px rgba(0,0,0,0.2); z-index: 1001;
-            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            display: flex; flex-direction: column; overflow: hidden;
-            background-image: 
-                linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
-                linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
-            background-size: 20px 20px;
-            will-change: transform; /* ✨ 提示手機瀏覽器使用 GPU 專心處理滑動 */
-        
-        }
+ .overlay-panel {
+    position: fixed; background: var(--panel-bg);
+    box-shadow: 0 0 25px rgba(0,0,0,0.2); z-index: 1001;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex; flex-direction: column; overflow: hidden;
+    /* 🛑 已刪除 background-image 和 background-size */
+}
         
         .panel-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -413,14 +408,11 @@
         }
         .modal-overlay.active { display: flex; }
         .modal-content {
-            background: var(--panel-bg); border: 2px solid var(--border-line);
-            border-radius: 6px; width: 90%; max-width: 450px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4); overflow: hidden;
-            background-image: 
-                linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
-                linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
+    background: var(--panel-bg); border: 2px solid var(--border-line);
+    border-radius: 6px; width: 90%; max-width: 450px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4); overflow: hidden;
+    /* 🛑 已刪除 background-image 和 background-size */
+}
         .modal-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 15px 20px; border-bottom: 1px dashed var(--border-line);
@@ -473,12 +465,15 @@
                 left: calc((100vw - var(--panel-width)) / 2);
             }
 
-            .panel-resizer {
-                position: absolute; top: 0; left: -5px; bottom: 0; width: 10px; cursor: ew-resize; z-index: 1002;
-            }
-            .resizer-line { top: 50%; left: 4px; width: 4px; height: 40px; transform: translateY(-50%); }
-            .vocab-grid { grid-template-columns: 1fr 1fr; }
-        }
+             .panel-resizer {
+        position: absolute; top: 0; left: -12px; bottom: 0; width: 24px; /* ✨ 寬度加倍至24px，向左延伸 */
+        cursor: ew-resize; z-index: 1002;
+        touch-action: none; /* ✨ 關鍵：防止拖曳時觸發頁面捲動 */
+    }
+    .resizer-line { 
+        top: 50%; left: 10px; width: 4px; height: 40px; transform: translateY(-50%); 
+    }
+}
 
 
         
@@ -520,12 +515,15 @@
             .fab-bar { bottom: 15px; width: 90%; justify-content: space-around; }
             .remark-table th, .remark-table td { padding: 8px; }
             
-            .panel-resizer {
-                position: absolute; top: -5px; left: 0; right: 0; height: 15px; cursor: ns-resize; z-index: 1002;
-            }
-            .resizer-line { top: 6px; left: 50%; width: 40px; height: 4px; transform: translateX(-50%); }
-        }
-
+           .panel-resizer {
+        position: absolute; top: -15px; left: 0; right: 0; height: 30px; /* ✨ 高度加倍至30px，向上延伸 */
+        cursor: ns-resize; z-index: 1002;
+        touch-action: none; /* ✨ 關鍵：防止拖曳時觸發頁面捲動 */
+    }
+    .resizer-line { 
+        top: 13px; left: 50%; width: 40px; height: 4px; transform: translateX(-50%); 
+    }
+}
         /* ---------------- 首頁主卡片：古籍與題簽分離設計 ---------------- */
         #main-category-grid {
             display: flex; justify-content: center; gap: 60px; margin-top: 35px; padding-bottom: 30px; flex-wrap: wrap;
@@ -601,11 +599,8 @@
             line-height: 1.6;
             color: var(--ink-black);
             font-family: var(--font-book);
-            background-image: 
-                linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
-                linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
-            background-size: 20px 20px;
-            pointer-events: auto;
+            background: var(--panel-bg);
+    pointer-events: auto;
         }
 
         .tooltip-header {
