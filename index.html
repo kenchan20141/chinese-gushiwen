@@ -563,13 +563,14 @@
 </div>
 
 <script>
-    const dynastyOrder = ["先秦","秦代","漢代","兩漢","魏晉","南北朝","隋代","唐代","五代","宋代","金朝","遼代","元代","明代","清代","近代","現代","未知"];
+   const dynastyOrder = ["古文觀止","先秦","秦代","漢代","兩漢","魏晉","南北朝","隋代","唐代","五代","宋代","金朝","遼代","元代","明代","清代","近代","現代","未知"];
     const fileUrls = [
-        "guwen0-1000.json", "guwen1001-2000.json", "guwen2001-3000.json",
-        "guwen3001-4000.json", "guwen4001-5000.json", "guwen5001-6000.json",
-        "guwen6001-7000.json", "guwen7001-8000.json", "guwen8001-9000.json",
-        "guwen9001-10000.json"
-    ].map(name => `https://raw.githubusercontent.com/kenchan20141/chinese-gushiwen/master/guwen/${name}`);
+    "guwenguanzhi_converted.json", // <--- 加上這行
+    "guwen0-1000.json", "guwen1001-2000.json", "guwen2001-3000.json",
+    "guwen3001-4000.json", "guwen4001-5000.json", "guwen5001-6000.json",
+    "guwen6001-7000.json", "guwen7001-8000.json", "guwen8001-9000.json",
+    "guwen9001-10000.json"
+].map(name => `https://raw.githubusercontent.com/kenchan20141/chinese-gushiwen/master/guwen/${name}`);
 
     const poetryTags = ["詩", "詞", "曲", "五言", "七言", "絕句", "律詩", "樂府", "古詩", "楚辭", "唐詩", "宋詞", "元曲", "辭賦", "詩經"];
 
