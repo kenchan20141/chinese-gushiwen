@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文言特訓</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
     <!-- 引入 OpenCC 繁簡轉換套件 -->
     <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
     <style>
@@ -38,7 +35,7 @@
             overscroll-behavior: none;
         }
 
-     .book-container {
+        .book-container {
             max-width: 900px; margin: 30px auto; 
             background: #faf4e3;
             border: 1px solid var(--border-line);
@@ -47,8 +44,7 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             min-height: 90vh; position: relative;
             animation: unfoldScroll 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            /* 🛑 這裡只允許 transform, opacity, box-shadow 有動畫 */
-              transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         @keyframes unfoldScroll {
@@ -64,91 +60,38 @@
             100% { opacity: 1; filter: blur(0); transform: translateY(0); }
         }
 
-       .view { display: none; }
-        .view.active { display: block; } /* 移除 inkFadeIn 動畫，確保點擊後瞬間流暢顯示 */
+        .view { display: none; }
+        .view.active { display: block; animation: inkFadeIn 0.5s ease both; }
 
-       /* ✨ 顛覆性設計：殿堂級牌匾 (Plaque) 與懸掛印籤 */
         header {
             position: relative;
-            margin: -40px -50px 35px -50px; /* 向外延展，貼齊書本邊緣 */
-            padding: 45px 0;
-            background-color: #15181c; /* 極致深邃的玄黑底色 */
-            /* 隱約的橫向絹絲紋理 */
-            background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px);
-            border-bottom: 6px solid var(--cinnabar-red); /* 底部厚重朱砂壓線 */
-            text-align: center;
-            border-radius: 4px 4px 0 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-            overflow: hidden; /* 確保內框不會超出 */
-        }
-        
-        /* 牌匾內層的暗金裝飾線 */
-        header::after {
-            content: ""; position: absolute;
-            top: 10px; bottom: 10px; left: 10px; right: 10px;
-            border: 1px solid rgba(212, 175, 55, 0.25);
-            pointer-events: none;
+            text-align: center; border-bottom: 2px solid var(--border-line);
+            padding-bottom: 15px; margin-bottom: 25px;
         }
 
         .header-actions {
-            position: absolute; 
-            right: 35px; 
-            top: 50%; 
-            transform: translateY(-50%); /* 完美垂直置中 */
-            display: flex; gap: 15px; align-items: center;
-            z-index: 5;
+            position: absolute; right: 10px; bottom: 15px;
+            display: flex; gap: 12px; align-items: center;
         }
 
         .header-btn {
             background: transparent; border: none; cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
-            padding: 5px; display: flex; border-radius: 50%;
-        }
-        
-        /* 將右側的按鈕顏色配合黑底改為暗金色與朱紅色 */
-      /* 修改生詞庫(左側圖示)為古典的翠玉綠，與鎦金字體區隔 */
-       .header-btn:nth-child(1) svg { stroke: #4ea5b8; }
-        .header-btn:nth-child(2) svg { stroke: var(--cinnabar-red); }
-        
-        .header-btn:hover { 
-            transform: scale(1.15) translateY(-2px); 
-            background: rgba(255,255,255,0.08);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s; padding: 0; display: flex;
         }
 
-  h1.app-title {
-    position: relative;
-    color: #d4af37; 
-    font-size: 3.4em; 
-    letter-spacing: 24px; 
-    margin: 0 0 0 24px;
-    padding-left: 0;
-    font-weight: bold; /* ✨ 已加粗 */
-    font-family: var(--font-book); 
-    text-shadow: 0 4px 20px rgba(0,0,0,0.9); 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-}
-        /* 破格設計：將「神思」轉為垂直懸掛的壓角籤條 */
-        .stamp {
-            display: inline-flex;
-            writing-mode: vertical-rl; /* 豎排文字 */
-            background: var(--cinnabar-red);
-            color: #fff;
-            font-size: 0.35em;
-            letter-spacing: 8px;
-            padding: 16px 8px 8px 8px; 
-            margin-left: 5px;
-            border: 2px solid #f4ecd8; /* 雙層畫框感 */
-            outline: 1px solid var(--cinnabar-red); 
-            outline-offset: 2px;
-            transform: translateY(22px); /* 故意向下懸掛，突破標題的水平線 */
-            box-shadow: 3px 6px 15px rgba(0,0,0,0.6);
-            font-weight: bold;
-            font-family: var(--font-book);
+        .header-btn:hover { transform: scale(1.15); }
+
+        h1.app-title {
+            color: var(--ink-black); font-size: 2.8em; letter-spacing: 8px;
+            margin: 0 0 10px 0; font-weight: 700;
         }
+
+        .stamp {
+            display: inline-block; color: var(--cinnabar-red); border: 2px solid var(--cinnabar-red);
+            padding: 2px 8px; font-size: 0.9em; font-weight: 700; border-radius: 4px;
+            transform: rotate(-3deg); opacity: 0.85; letter-spacing: 2px; margin-left: 10px;
+        }
+
         .loading-container { text-align: center; margin-top: 20vh; }
         .yin-yang {
             width: 60px; height: 60px; margin: 0 auto 20px auto; border-radius: 50%;
@@ -270,49 +213,7 @@
         }
         .diff-badge { font-size: 0.85em; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
 
-  /* =========================================
-           ✨ 終極折衷方案：純 CSS 渲染信箋質感 (極致流暢且美觀)
-           ========================================= */
- /* =========================================
-           ✨ 橫排信箋風格：移除耗能濾鏡，改為純色背景
-           ========================================= */
-        .article-wrap {
-            background-color: #fcf9f2; /* 保留溫潤的宣紙底色 */
-            border: 2px solid var(--border-line); 
-            outline: 1px solid var(--border-line);
-            outline-offset: -6px; 
-            padding: 50px 40px; 
-            margin: 20px auto 80px auto;
-            /* 保留極輕微的陰影增加立體感 */
-            box-shadow: inset 0 0 30px rgba(167, 51, 34, 0.03), 0 8px 20px rgba(0,0,0,0.06);
-            border-radius: 2px;
-            /* 🛑 絕對不要在這裡寫 transition: padding */
-        }
-
-        /* 確保沒有 .article-wrap::before 這個偽元素，有的話請刪除 */
-
-/* ✨ 獨立效能層：將複雜濾鏡放在這裡，就不會干擾文字動畫 */
-.article-wrap::before {
-    content: ""; position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: -1; pointer-events: none;
-    
-    background-image: 
-        repeating-linear-gradient(to bottom, transparent, transparent 5px, rgba(120, 90, 50, 0.025) 5px, rgba(120, 90, 50, 0.025) 6px),
-        url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="paper"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(%23paper)" opacity="0.08"/></svg>'),
-        linear-gradient(145deg, rgba(255, 255, 255, 0.5) 0%, rgba(180, 140, 90, 0.08) 100%);
-    background-blend-mode: normal, multiply, normal;
-}
-
-        
-
-        /* 針對手機版微調邊距，保持版面精緻 */
-        @media (max-width: 849px) {
-            .article-wrap { 
-                padding: 30px 20px; 
-                outline-offset: -4px; 
-            }
-        }
+        .article-wrap { padding-bottom: 80px; transition: padding 0.3s ease; }
         .p-title { text-align: center; font-size: 2.4em; margin-bottom: 5px; font-weight: bold; letter-spacing: 3px; }
         .p-author { text-align: center; color: var(--ink-gray); margin-bottom: 20px; font-size: 1.2em; letter-spacing: 2px; }
         
@@ -351,13 +252,16 @@
         .fab-bar .icon-btn:hover { background: rgba(255,255,255,0.1); }
         .fab-bar svg { width: 22px; height: 22px; }
 
- .overlay-panel {
-    position: fixed; background: var(--panel-bg);
-    box-shadow: 0 0 25px rgba(0,0,0,0.2); z-index: 1001;
-    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-    display: flex; flex-direction: column; overflow: hidden;
-    /* 🛑 已刪除 background-image 和 background-size */
-}
+        .overlay-panel {
+            position: fixed; background: var(--panel-bg);
+            box-shadow: 0 0 25px rgba(0,0,0,0.2); z-index: 1001;
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex; flex-direction: column; overflow: hidden;
+            background-image: 
+                linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
         
         .panel-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -408,11 +312,14 @@
         }
         .modal-overlay.active { display: flex; }
         .modal-content {
-    background: var(--panel-bg); border: 2px solid var(--border-line);
-    border-radius: 6px; width: 90%; max-width: 450px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4); overflow: hidden;
-    /* 🛑 已刪除 background-image 和 background-size */
-}
+            background: var(--panel-bg); border: 2px solid var(--border-line);
+            border-radius: 6px; width: 90%; max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); overflow: hidden;
+            background-image: 
+                linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
         .modal-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 15px 20px; border-bottom: 1px dashed var(--border-line);
@@ -443,64 +350,27 @@
             opacity: 0.8; background-color: var(--cinnabar-red);
         }
 
-
-@media (min-width: 850px) {
+        @media (min-width: 850px) {
             .overlay-panel {
                 top: 0; right: 0; bottom: 0; width: var(--panel-width);
                 border-left: 2px solid var(--border-line);
                 transform: translateX(100%);
             }
             .overlay-panel.open { transform: translateX(0); }
-            
-            /* ✨ 1. 書本瞬間收縮：動態計算剩餘寬度並讓出右側空間 */
             body.panel-open .book-container { 
-                transform: none; 
-                margin-left: 2vw;
-                margin-right: calc(var(--panel-width) + 2vw);
-                max-width: calc(100vw - var(--panel-width) - 4vw);
+                transform: translateX(calc( -1 * (var(--panel-width) / 2 - 20px) )); 
             }
-            
-            /* ✨ 2. 懸浮按鈕置中修正：讓底部的「注釋/譯文」按鈕也對齊剩餘空間的中心 */
-            body.panel-open .fab-bar {
-                left: calc((100vw - var(--panel-width)) / 2);
+            .panel-resizer {
+                position: absolute; top: 0; left: -5px; bottom: 0; width: 10px; cursor: ew-resize; z-index: 1002;
             }
-
-             .panel-resizer {
-        position: absolute; top: 0; left: -12px; bottom: 0; width: 24px; /* ✨ 寬度加倍至24px，向左延伸 */
-        cursor: ew-resize; z-index: 1002;
-        touch-action: none; /* ✨ 關鍵：防止拖曳時觸發頁面捲動 */
-    }
-    .resizer-line { 
-        top: 50%; left: 10px; width: 4px; height: 40px; transform: translateY(-50%); 
-    }
-}
-
-
-        
+            .resizer-line { top: 50%; left: 4px; width: 4px; height: 40px; transform: translateY(-50%); }
+            .vocab-grid { grid-template-columns: 1fr 1fr; }
+        }
         @media (max-width: 849px) {
             .book-container { margin: 0; min-height: 100vh; outline: none; border: none; box-shadow: none; }
             .book-page { padding: 20px 15px; }
-             /* 新增牌匾在手機端的縮放佈局 */
-            header {
-                margin: -20px -15px 35px -15px; /* 適應手機版邊距 */
-                padding: 30px 0;
-            }
-         h1.app-title { 
-                font-size: 2.2em; 
-                letter-spacing: 12px; 
-                padding-left: 25px;
-                margin: 0;
-                box-sizing: border-box;
-                justify-content: flex-start; /* ✨ 關鍵：僅在手機版靠左對齊 */
-            }
-            .stamp { 
-                font-size: 0.35em; 
-                padding: 12px 6px 6px 6px; 
-                transform: translateY(16px); 
-            }
-            .header-actions { right: 15px; gap: 8px; }
-            .header-btn { padding: 2px; }
-            .header-btn svg { width: 24px; height: 24px; }
+            h1.app-title { font-size: 1.8em; padding: 0 80px; box-sizing: border-box; }
+            .stamp { font-size: 0.7em; margin-left: 6px; vertical-align: middle; }
             .content-area { font-size: 1.3em; }
             
             .overlay-panel {
@@ -515,15 +385,12 @@
             .fab-bar { bottom: 15px; width: 90%; justify-content: space-around; }
             .remark-table th, .remark-table td { padding: 8px; }
             
-           .panel-resizer {
-        position: absolute; top: -15px; left: 0; right: 0; height: 30px; /* ✨ 高度加倍至30px，向上延伸 */
-        cursor: ns-resize; z-index: 1002;
-        touch-action: none; /* ✨ 關鍵：防止拖曳時觸發頁面捲動 */
-    }
-    .resizer-line { 
-        top: 13px; left: 50%; width: 40px; height: 4px; transform: translateX(-50%); 
-    }
-}
+            .panel-resizer {
+                position: absolute; top: -5px; left: 0; right: 0; height: 15px; cursor: ns-resize; z-index: 1002;
+            }
+            .resizer-line { top: 6px; left: 50%; width: 40px; height: 4px; transform: translateX(-50%); }
+        }
+
         /* ---------------- 首頁主卡片：古籍與題簽分離設計 ---------------- */
         #main-category-grid {
             display: flex; justify-content: center; gap: 60px; margin-top: 35px; padding-bottom: 30px; flex-wrap: wrap;
@@ -566,7 +433,47 @@
         .category-wrapper:hover .classic-book-card { transform: translateY(-8px) scale(1.02); box-shadow: 10px 15px 25px rgba(0,0,0,0.15); }
         .category-wrapper:hover .book-stamp { transform: scale(1.05); background: #fff9f0; box-shadow: 0 4px 10px rgba(167, 51, 34, 0.15); }
 
+        /* =========================================
+           ✨ 橫排信箋風格：沉浸式古籍閱讀體驗
+           ========================================= */
+        .article-wrap {
+            background-color: #fcf9f2; border: 2px solid var(--border-line); outline: 1px solid var(--border-line);
+            outline-offset: -6px; padding: 50px 40px; margin: 20px auto 80px auto;
+            box-shadow: inset 0 0 30px rgba(167, 51, 34, 0.03), 0 8px 20px rgba(0,0,0,0.06);
+            transition: padding 0.3s ease; border-radius: 2px;
+        }
 
+        .p-title {
+            text-align: center; font-size: 2.4em; font-weight: bold; letter-spacing: 6px; color: var(--ink-black);
+            margin-bottom: 10px; position: relative;
+        }
+        .p-title::after {
+            content: ""; display: block; width: 50px; height: 3px; background-color: var(--cinnabar-red);
+            margin: 15px auto 0; opacity: 0.8; border-radius: 2px;
+        }
+        .p-author { text-align: center; color: var(--ink-gray); font-size: 1.15em; letter-spacing: 4px; margin-bottom: 45px; }
+
+        .content-area {
+            font-size: 1.45em; line-height: 2.2em; letter-spacing: 2px;
+            background-image: repeating-linear-gradient(to bottom, transparent, transparent calc(2.2em - 1px), rgba(167, 51, 34, 0.15) calc(2.2em - 1px), rgba(167, 51, 34, 0.15) 2.2em);
+            background-size: 100% 2.2em; background-position: top left; padding-top: 0.1em;
+        }
+
+        .article-wrap .morandi-text p {
+            text-indent: 2em; margin: 0 0 2.2em 0; text-align: justify; text-justify: inter-ideograph;
+            transition: color 0.3s ease; text-shadow: 0.5px 0.5px 0px rgba(0,0,0,0.1);
+        }
+
+        .article-wrap .morandi-text p:nth-of-type(5n+1) { color: #2b2b2b; }
+        .article-wrap .morandi-text p:nth-of-type(5n+2) { color: #3d7a60; }
+        .article-wrap .morandi-text p:nth-of-type(5n+3) { color: #3b6b96; }
+        .article-wrap .morandi-text p:nth-of-type(5n+4) { color: #9e4a41; }
+        .article-wrap .morandi-text p:nth-of-type(5n+5) { color: #7a5885; }
+
+        @media (max-width: 849px) {
+            .article-wrap { padding: 30px 20px; outline-offset: -4px; }
+            body.panel-open .article-wrap { padding-bottom: calc(var(--panel-height) + 60px) !important; }
+        }
 
         /* =========================================
            ✨ 新增：行內注釋與 Tooltip 懸浮提示樣式
@@ -599,8 +506,11 @@
             line-height: 1.6;
             color: var(--ink-black);
             font-family: var(--font-book);
-            background: var(--panel-bg);
-    pointer-events: auto;
+            background-image: 
+                linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: auto;
         }
 
         .tooltip-header {
@@ -623,33 +533,6 @@
             color: var(--ink-black);
         }
 
-        /* Iframe 檢索面板 */
-        .iframe-modal {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7); z-index: 4000;
-            display: none; justify-content: center; align-items: center;
-            animation: fadeIn 0.3s ease;
-        }
-        .iframe-modal.active { display: flex; }
-        .iframe-content {
-            background: var(--paper-bg); border: 2px solid var(--border-line);
-            border-radius: 6px; width: 95%; max-width: 900px; height: 85vh;
-            display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-        .iframe-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 20px; border-bottom: 2px solid var(--border-line); 
-            background: var(--panel-bg);
-        }
-        .iframe-header h3 { margin: 0; font-size: 1.3em; color: var(--ink-black); letter-spacing: 2px; }
-        .iframe-body { flex: 1; width: 100%; border: none; background: #fff; }
-
-        /* 拖曳時禁用所有元素的動畫以確保極致跟手 */
-        body.is-resizing * {
-            transition: none !important;
-        }
-
     </style>
 </head>
 <body>
@@ -657,7 +540,7 @@
 <div class="book-container">
     <div class="book-page">
         <header>
-            <h1 class="app-title">文言特訓</h1>
+            <h1 class="app-title">文言特訓<span class="stamp">神思</span></h1>
             
             <div class="header-actions">
                 <!-- 字詞庫按鈕 -->
@@ -736,10 +619,13 @@
                     <!-- 加入最愛按鈕 -->
                     <button id="btn-toggle-fav" class="icon-btn" onclick="toggleCurrentFavorite()" title="加入/移除最愛" style="border: none; padding: 6px;"></button>
                     <!-- 語音吟誦按鈕 -->
-                
+                    <button id="btn-tts" class="icon-btn btn-danger" onclick="toggleTTS()" title="吟誦此卷">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        吟誦
+                    </button>
                 </div>
             </div>
-         
+            <div id="progress-wrapper" class="progress-wrapper"><div class="progress-bar-bg"><div id="progress-bar-fill" class="progress-bar-fill"></div></div></div>
 
             <div class="article-wrap">
                 <div id="p-title" class="p-title"></div>
@@ -751,18 +637,8 @@
     </div>
 </div>
 
-<div id="search-popup" onclick="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
+<div id="search-popup" onmousedown="execGoogleSearch(event)" ontouchstart="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-</div>
-
-    <div id="iframe-search-modal" class="iframe-modal">
-    <div class="iframe-content">
-        <div class="iframe-header">
-            <h3 id="iframe-title">檢索解惑</h3>
-            <button class="panel-close" onclick="closeIframeSearch()">×</button>
-        </div>
-        <iframe id="search-iframe" class="iframe-body" src=""></iframe>
-    </div>
 </div>
 
 <!-- ✨ 新增：行內注釋懸浮提示窗 (Tooltip) -->
@@ -789,7 +665,6 @@
         <h3 id="panel-title">資料夾</h3>
         <button class="panel-close" onclick="closePanel()">×</button>
     </div>
-    <!-- ✨ 恢復舊版的單一容器 -->
     <div id="panel-body" class="panel-body"></div>
 </div>
 
@@ -921,10 +796,9 @@
         return text.trim();
     }
 
- function initPanelResize() {
+    function initPanelResize() {
         let isResizing = false;
         let startY, startX, startHeight, startWidth;
-        let dragRAF = null; 
         const resizer = document.getElementById('panel-resizer');
 
         resizer.addEventListener('mousedown', initDrag);
@@ -933,8 +807,6 @@
         function initDrag(e) {
             e.preventDefault();
             isResizing = true;
-            document.body.classList.add('is-resizing'); 
-
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             startX = clientX;
@@ -943,9 +815,6 @@
             const panel = document.getElementById('overlay-panel');
             startWidth = panel.offsetWidth;
             startHeight = panel.offsetHeight;
-            
-            // ✨ 關閉面板過渡動畫，準備使用行內樣式，避免拖曳時觸發整頁古文回流
-            panel.style.transition = 'none';
 
             document.addEventListener('mousemove', doDrag);
             document.addEventListener('touchmove', doDrag, {passive: false});
@@ -955,51 +824,24 @@
 
         function doDrag(e) {
             if (!isResizing) return;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
-            if (dragRAF) cancelAnimationFrame(dragRAF); 
-            
-            dragRAF = requestAnimationFrame(() => {
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                const panel = document.getElementById('overlay-panel');
-                
-                if (window.innerWidth >= 850) {
-                    let newWidth = startWidth - (clientX - startX);
-                    if(newWidth < 250) newWidth = 250; 
-                    if(newWidth > window.innerWidth * 0.8) newWidth = window.innerWidth * 0.8; 
-                    // ✨ 僅改變面板本身的寬度，不修改全域變數，防止背景排版每幀重算
-                    panel.style.width = newWidth + 'px';
-                } else {
-                    let newHeight = startHeight - (clientY - startY);
-                    if(newHeight < window.innerHeight * 0.15) newHeight = window.innerHeight * 0.15;
-                    if(newHeight > window.innerHeight * 0.9) newHeight = window.innerHeight * 0.9;
-                    // ✨ 僅改變面板本身的高度
-                    panel.style.height = newHeight + 'px';
-                }
-            });
+            if (window.innerWidth >= 850) {
+                let newWidth = startWidth - (clientX - startX);
+                if(newWidth < 250) newWidth = 250; 
+                if(newWidth > window.innerWidth * 0.8) newWidth = window.innerWidth * 0.8; 
+                document.documentElement.style.setProperty('--panel-width', newWidth + 'px');
+            } else {
+                let newHeight = startHeight - (clientY - startY);
+                if(newHeight < window.innerHeight * 0.15) newHeight = window.innerHeight * 0.15;
+                if(newHeight > window.innerHeight * 0.9) newHeight = window.innerHeight * 0.9;
+                document.documentElement.style.setProperty('--panel-height', newHeight + 'px');
+            }
         }
 
         function stopDrag() {
             isResizing = false;
-            document.body.classList.remove('is-resizing'); 
-            if (dragRAF) cancelAnimationFrame(dragRAF);
-
-            const panel = document.getElementById('overlay-panel');
-            panel.style.transition = ''; // 恢復 CSS 過渡動畫控制
-            
-            // ✨ 拖曳放開時，才將最終結果寫入全域變數，進行唯一一次的頁面重排
-            if (window.innerWidth >= 850) {
-                if (panel.style.width) {
-                    document.documentElement.style.setProperty('--panel-width', panel.style.width);
-                    panel.style.width = ''; // 清除行內樣式，交還給 CSS 變數接管
-                }
-            } else {
-                if (panel.style.height) {
-                    document.documentElement.style.setProperty('--panel-height', panel.style.height);
-                    panel.style.height = ''; // 清除行內樣式，交還給 CSS 變數接管
-                }
-            }
-
             document.removeEventListener('mousemove', doDrag);
             document.removeEventListener('touchmove', doDrag);
             document.removeEventListener('mouseup', stopDrag);
@@ -1010,7 +852,6 @@
         }
     }
 
-    
     function correctClassicalChinese(twText) {
         if (!twText) return "";
         twText = twText.replace(/(^|[「『（(【《〈“‘，。！？、；：\s>—])餘/g, '$1余');
@@ -1405,7 +1246,6 @@
     }
 
     // 2. 在正文中搜尋字詞，並標記為高亮。使用 PUA 防替換衝突
- // 2. 在正文中搜尋字詞，並標記為高亮。使用 PUA 防替換衝突 (舊版高效寫法)
     function highlightVocabsInContent(contentStr, vocabs) {
         // 以字詞長度降序排列，避免「短詞」干擾「長詞」的高亮
         let sorted = [...vocabs].sort((a, b) => b.vocab.length - a.vocab.length);
@@ -1441,7 +1281,7 @@
         
         return processedText;
     }
-    
+
     // 3. 生成側邊面板用的注釋表格 (改為吃 List)
     function parseRemarksToTableFromList(vocabs) {
         let safeTitle = currentPoem ? safeConvert(currentPoem.title) : '未知';
@@ -1546,9 +1386,9 @@
 
     /* ======================================================== */
 
-function openDetail(p) {
+    function openDetail(p) {
         currentPoem = p;
-        if(typeof stopTTS === 'function') stopTTS(); // 如果有語音功能則停止
+        stopTTS();
         closePanel(); 
         hideVocabTooltip();
         
@@ -1563,7 +1403,7 @@ function openDetail(p) {
         let remarkStr = safeConvert(p.remark);
         let shangxiStr = removeBrackets(safeConvert(p.shangxi));
 
-        // ✨ 恢復舊版做法：一次性執行注釋提取與正文高亮替換
+        // ✨ 執行注釋提取與正文高亮替換
         let extractedVocabs = extractVocabs(remarkStr);
         let contentStr = cleanClassicalContent(safeConvert(p.content));
         let highlightedContent = highlightVocabsInContent(contentStr, extractedVocabs);
@@ -1571,7 +1411,7 @@ function openDetail(p) {
         // 將替換好的 HTML 放回 DOM
         document.getElementById('p-content-unified').innerHTML = wrapParagraphs(highlightedContent);
 
-        // 更新各個面板的快取字串 (不提早塞進 DOM 避免卡頓)
+        // 更新各個面板的快取
         cacheRemark = parseRemarksToTableFromList(extractedVocabs);
         cacheTranslation = transStr ? `<div class="morandi-text">${wrapParagraphs(transStr)}</div>` : '<div class="empty">卷宗殘缺，暫無譯文</div>';
         cacheShangxi = shangxiStr ? `<div class="morandi-text">${wrapParagraphs(shangxiStr)}</div>` : '<div class="empty">卷宗殘缺，暫無賞析</div>';
@@ -1615,11 +1455,7 @@ function openDetail(p) {
         }
     }
 
-    // 宣告一個計時器變數，防止選取區消失時按鈕瞬間不見
-    let selectionTimeout;
-
     document.addEventListener('selectionchange', () => {
-        clearTimeout(selectionTimeout); // 只要還在選取，就清除隱藏倒數
         const popup = document.getElementById('search-popup');
         const selection = window.getSelection();
         const text = selection.toString().trim();
@@ -1634,34 +1470,21 @@ function openDetail(p) {
             popup.style.top = (window.pageYOffset + rect.bottom + 10) + 'px';
             popup.style.left = (window.pageXOffset + rect.left + (rect.width / 2) - 18) + 'px';
         } else {
-            // 加入 300 毫秒延遲，讓使用者點擊時，按鈕有足夠時間觸發 click 事件再隱藏
-            selectionTimeout = setTimeout(() => {
-                popup.style.display = 'none';
-                lastSelectedText = "";
-            }, 300);
+            popup.style.display = 'none';
+            lastSelectedText = "";
         }
     });
 
-   function execGoogleSearch(e) {
+    function execGoogleSearch(e) {
         if(e) { e.preventDefault(); e.stopPropagation(); }
         if(lastSelectedText) {
-            // 加入 &igu=1 嘗試讓 Google 允許 Iframe 嵌入
-            const searchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(`「${lastSelectedText}」 意思`) + '&igu=1';
-            
-            document.getElementById('iframe-title').innerText = `檢索：${lastSelectedText}`;
-            document.getElementById('search-iframe').src = searchUrl;
-            document.getElementById('iframe-search-modal').classList.add('active');
-            
+            window.open('https://www.google.com/search?q=' + encodeURIComponent(`「${lastSelectedText}」 意思`), 'GoogleSearch', 'width=600,height=600,top=100,left=200');
             window.getSelection().removeAllRanges();
             document.getElementById('search-popup').style.display = 'none';
             lastSelectedText = "";
         }
     }
 
-    function closeIframeSearch() {
-        document.getElementById('iframe-search-modal').classList.remove('active');
-        document.getElementById('search-iframe').src = ''; // 清空 src 釋放記憶體
-    }
     // 改寫：更新本機資料庫並同步所有快取 UI (Tooltip / 側邊面板)
     function toggleVocab(encVocab, encExp, btn) {
         let vocab = decodeURIComponent(encVocab);
@@ -1735,35 +1558,31 @@ function openDetail(p) {
         renderVocabBook();
     }
 
- function openPanel(type) {
-    hideVocabTooltip(); // 開啟側邊欄時自動隱藏懸浮窗
-    const panel = document.getElementById('overlay-panel');
-    const title = document.getElementById('panel-title');
-    const body = document.getElementById('panel-body');
-    
-    // 1. 先設定標題
-    if (type === 'remark') title.innerText = '注釋解析';
-    else if (type === 'translation') title.innerText = '白話譯文';
-    else if (type === 'shangxi') title.innerText = '賞析點評';
-    
-    // 2. 優先觸發 CSS 動畫 (不阻塞主執行緒)
-    panel.classList.add('open');
-    document.body.classList.add('panel-open');
-    
-    // 3. ✨ 延遲 DOM 寫入：等待動畫起步後，再塞入大量 HTML
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            if (type === 'remark') body.innerHTML = cacheRemark;
-            else if (type === 'translation') body.innerHTML = cacheTranslation;
-            else if (type === 'shangxi') body.innerHTML = cacheShangxi;
-            body.scrollTop = 0;
-        });
-    });
-}
+    function openPanel(type) {
+        hideVocabTooltip(); // 開啟側邊欄時自動隱藏懸浮窗
+        const panel = document.getElementById('overlay-panel');
+        const title = document.getElementById('panel-title');
+        const body = document.getElementById('panel-body');
+        
+        if (type === 'remark') {
+            title.innerText = '注釋解析';
+            body.innerHTML = cacheRemark;
+        } else if (type === 'translation') {
+            title.innerText = '白話譯文';
+            body.innerHTML = cacheTranslation;
+        } else if (type === 'shangxi') {
+            title.innerText = '賞析點評';
+            body.innerHTML = cacheShangxi;
+        }
+        
+        panel.classList.add('open');
+        document.body.classList.add('panel-open');
+        body.scrollTop = 0;
+    }
+
     function closePanel() {
         document.getElementById('overlay-panel').classList.remove('open');
         document.body.classList.remove('panel-open');
-        // 關閉時不再清空 HTML 內容，保留在記憶體裡，反覆打開都會極度絲滑
     }
 
     function showView(viewId) {
@@ -1828,30 +1647,13 @@ function openDetail(p) {
         });
     }
 
-   let synth = window.speechSynthesis;
+    let synth = window.speechSynthesis;
     let currentUtterance = null;
     
-    // ======== 新增：手機端音訊解鎖機制 ========
-    let ttsUnlocked = false;
-    function unlockTTS() {
-        if (!ttsUnlocked) {
-            let silentUtterance = new SpeechSynthesisUtterance('');
-            silentUtterance.volume = 0; // 靜音
-            synth.speak(silentUtterance);
-            ttsUnlocked = true;
-            window.removeEventListener('touchstart', unlockTTS);
-            window.removeEventListener('click', unlockTTS);
-        }
-    }
-    // 監聽用戶的第一次點擊或觸摸來解鎖
-    window.addEventListener('touchstart', unlockTTS, { once: true });
-    window.addEventListener('click', unlockTTS, { once: true });
-    // =========================================
-
     const playSvg = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 吟誦`;
     const stopSvg = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><rect x="6" y="6" width="12" height="12"></rect></svg> 停止`;
 
-   function toggleTTS() {
+    function toggleTTS() {
         const btn = document.getElementById('btn-tts');
         const pWrapper = document.getElementById('progress-wrapper');
         const pBar = document.getElementById('progress-bar-fill');
@@ -1860,51 +1662,36 @@ function openDetail(p) {
             stopTTS();
         } else {
             if (!currentPoem) return;
-            
-            // 立即變更 UI，讓用戶知道有反應（不要等 onstart，手機上 onstart 常常會遲到）
-            btn.style.backgroundColor = 'var(--cinnabar-red)';
-            btn.style.color = 'var(--paper-bg)';
-            btn.innerHTML = stopSvg;
-            pWrapper.style.display = 'block';
-            pBar.style.width = '0%';
-
+            // 替換掉 HTML tag (如 Tooltip span)，只讀純文字
             let rawContent = removeBrackets(cleanClassicalContent(safeConvert(currentPoem.content)));
             let textToRead = safeConvert(currentPoem.title) + "。" + 
                              safeConvert(currentPoem.writer) + "。" + 
                              rawContent.replace(/<[^>]+>/g, '').replace(/\n/g, '。');
             
-            // 確保之前沒有卡住的語音
-            synth.cancel(); 
-
-            // 設定延遲，給手機瀏覽器緩衝時間
-            setTimeout(() => {
-                currentUtterance = new SpeechSynthesisUtterance(textToRead);
-                currentUtterance.lang = 'zh-TW';
-                currentUtterance.rate = 0.8; 
-                
-                // 強制尋找手機內建的中文語音 (解決 iOS 找不到預設聲音的問題)
-                let voices = synth.getVoices();
-                let zhVoice = voices.find(v => v.lang.includes('zh-TW') || v.lang.includes('zh-HK') || v.lang.includes('zh-CN'));
-                if (zhVoice) {
-                    currentUtterance.voice = zhVoice;
+            currentUtterance = new SpeechSynthesisUtterance(textToRead);
+            currentUtterance.lang = 'zh-TW';
+            currentUtterance.rate = 0.8; 
+            
+            currentUtterance.onstart = () => {
+                btn.style.backgroundColor = 'var(--cinnabar-red)';
+                btn.style.color = 'var(--paper-bg)';
+                btn.innerHTML = stopSvg;
+                pWrapper.style.display = 'block';
+                pBar.style.width = '0%';
+            };
+            
+            currentUtterance.onboundary = (event) => {
+                if (event.name === 'word' || event.name === 'sentence') {
+                    let percent = Math.floor((event.charIndex / textToRead.length) * 100);
+                    if (percent > 100) percent = 100;
+                    pBar.style.width = percent + '%';
                 }
-                
-                currentUtterance.onboundary = (event) => {
-                    if (event.name === 'word' || event.name === 'sentence') {
-                        let percent = Math.floor((event.charIndex / textToRead.length) * 100);
-                        if (percent > 100) percent = 100;
-                        pBar.style.width = percent + '%';
-                    }
-                };
+            };
 
-                currentUtterance.onend = () => stopTTS();
-                currentUtterance.onerror = (e) => {
-                    console.error("TTS Error:", e);
-                    stopTTS();
-                };
-                
-                synth.speak(currentUtterance);
-            }, 100);
+            currentUtterance.onend = () => stopTTS();
+            currentUtterance.onerror = () => stopTTS();
+            
+            synth.speak(currentUtterance);
         }
     }
 
