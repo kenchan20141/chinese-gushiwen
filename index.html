@@ -269,9 +269,20 @@
         }
         .diff-badge { font-size: 0.85em; padding: 2px 8px; border-radius: 12px; font-weight: bold; }
 
-  .article-wrap { 
-            padding-bottom: 80px; 
-            /* 刪除了原來的 transition: padding 0.3s ease; */
+  .article-wrap {
+            background-color: #f7f1e3; 
+            background-image: 
+                repeating-linear-gradient(to bottom, transparent, transparent 5px, rgba(120, 90, 50, 0.025) 5px, rgba(120, 90, 50, 0.025) 6px),
+                linear-gradient(145deg, rgba(255, 255, 255, 0.5) 0%, rgba(180, 140, 90, 0.08) 100%);
+            background-blend-mode: normal;
+            border: 1px solid #dcd1be; 
+            outline: 1px solid #dcd1be;
+            outline-offset: -8px; 
+            padding: 50px 40px; 
+            margin: 20px auto 80px auto;
+            box-shadow: inset 0 0 45px rgba(160, 120, 60, 0.08), 0 10px 30px rgba(0,0,0,0.06);
+            border-radius: 2px;
+            /* 移除了 transition: padding，避免與抽屜滑動產生排版衝突 */
         }
         .p-title { text-align: center; font-size: 2.4em; margin-bottom: 5px; font-weight: bold; letter-spacing: 3px; }
         .p-author { text-align: center; color: var(--ink-gray); margin-bottom: 20px; font-size: 1.2em; letter-spacing: 2px; }
@@ -805,7 +816,12 @@
         <h3 id="panel-title">資料夾</h3>
         <button class="panel-close" onclick="closePanel()">×</button>
     </div>
-    <div id="panel-body" class="panel-body"></div>
+    <!-- ✨ 替換：改為三個獨立的隱藏容器，點擊時不用再重算 HTML -->
+    <div id="panel-body" class="panel-body">
+        <div id="content-remark" style="display: none;"></div>
+        <div id="content-translation" style="display: none;"></div>
+        <div id="content-shangxi" style="display: none;"></div>
+    </div>
 </div>
 
 <div id="quiz-modal" class="modal-overlay">
