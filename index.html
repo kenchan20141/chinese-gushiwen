@@ -64,8 +64,8 @@
             100% { opacity: 1; filter: blur(0); transform: translateY(0); }
         }
 
-        .view { display: none; }
-        .view.active { display: block; animation: inkFadeIn 0.5s ease both; }
+       .view { display: none; }
+        .view.active { display: block; } /* 移除 inkFadeIn 動畫，確保點擊後瞬間流暢顯示 */
 
        /* ✨ 顛覆性設計：殿堂級牌匾 (Plaque) 與懸掛印籤 */
         header {
@@ -645,6 +645,11 @@
         .iframe-header h3 { margin: 0; font-size: 1.3em; color: var(--ink-black); letter-spacing: 2px; }
         .iframe-body { flex: 1; width: 100%; border: none; background: #fff; }
 
+        /* 拖曳時禁用所有元素的動畫以確保極致跟手 */
+        body.is-resizing * {
+            transition: none !important;
+        }
+
     </style>
 </head>
 <body>
@@ -916,9 +921,10 @@
         return text.trim();
     }
 
-    function initPanelResize() {
+   function initPanelResize() {
         let isResizing = false;
         let startY, startX, startHeight, startWidth;
+        let dragRAF = null; // 用於限流確保渲染不卡頓
         const resizer = document.getElementById('panel-resizer');
 
         resizer.addEventListener('mousedown', initDrag);
@@ -927,6 +933,8 @@
         function initDrag(e) {
             e.preventDefault();
             isResizing = true;
+            document.body.classList.add('is-resizing'); // 拖曳時瞬間停用所有延遲動畫
+
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             startX = clientX;
@@ -944,24 +952,32 @@
 
         function doDrag(e) {
             if (!isResizing) return;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
-            if (window.innerWidth >= 850) {
-                let newWidth = startWidth - (clientX - startX);
-                if(newWidth < 250) newWidth = 250; 
-                if(newWidth > window.innerWidth * 0.8) newWidth = window.innerWidth * 0.8; 
-                document.documentElement.style.setProperty('--panel-width', newWidth + 'px');
-            } else {
-                let newHeight = startHeight - (clientY - startY);
-                if(newHeight < window.innerHeight * 0.15) newHeight = window.innerHeight * 0.15;
-                if(newHeight > window.innerHeight * 0.9) newHeight = window.innerHeight * 0.9;
-                document.documentElement.style.setProperty('--panel-height', newHeight + 'px');
-            }
+            if (dragRAF) cancelAnimationFrame(dragRAF); // 清除尚未執行的幀，防止效能堆疊
+            
+            dragRAF = requestAnimationFrame(() => {
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                if (window.innerWidth >= 850) {
+                    let newWidth = startWidth - (clientX - startX);
+                    if(newWidth < 250) newWidth = 250; 
+                    if(newWidth > window.innerWidth * 0.8) newWidth = window.innerWidth * 0.8; 
+                    document.documentElement.style.setProperty('--panel-width', newWidth + 'px');
+                } else {
+                    let newHeight = startHeight - (clientY - startY);
+                    if(newHeight < window.innerHeight * 0.15) newHeight = window.innerHeight * 0.15;
+                    if(newHeight > window.innerHeight * 0.9) newHeight = window.innerHeight * 0.9;
+                    document.documentElement.style.setProperty('--panel-height', newHeight + 'px');
+                }
+            });
         }
 
         function stopDrag() {
             isResizing = false;
+            document.body.classList.remove('is-resizing'); // 拖曳結束恢復頁面動畫
+            if (dragRAF) cancelAnimationFrame(dragRAF);
+
             document.removeEventListener('mousemove', doDrag);
             document.removeEventListener('touchmove', doDrag);
             document.removeEventListener('mouseup', stopDrag);
@@ -971,7 +987,6 @@
             localStorage.setItem('panel-height', document.documentElement.style.getPropertyValue('--panel-height'));
         }
     }
-
     function correctClassicalChinese(twText) {
         if (!twText) return "";
         twText = twText.replace(/(^|[「『（(【《〈“‘，。！？、；：\s>—])餘/g, '$1余');
