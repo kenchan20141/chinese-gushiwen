@@ -112,21 +112,21 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        h1.app-title {
-            position: relative;
-            color: #d4af37; 
-            font-size: 3.4em; 
-            letter-spacing: 24px; 
-            margin: 0 0 0 24px; /* 修正寬字距造成的視覺偏移 */
-            padding-left: 0;    /* 移除左側留白 */
-            font-weight: normal; 
-            font-family: "STKaiti", "Kaiti TC", "BiauKai", var(--font-book); 
-            text-shadow: 0 4px 20px rgba(0,0,0,0.9); 
-            display: flex;
-            align-items: center;
-            justify-content: center; /* ✨ 關鍵：電腦與平板恢復置中對齊 */
-            z-index: 2;
-        }
+  h1.app-title {
+    position: relative;
+    color: #d4af37; 
+    font-size: 3.4em; 
+    letter-spacing: 24px; 
+    margin: 0 0 0 24px;
+    padding-left: 0;
+    font-weight: bold; /* ✨ 已加粗 */
+    font-family: var(--font-book); 
+    text-shadow: 0 4px 20px rgba(0,0,0,0.9); 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
         /* 破格設計：將「神思」轉為垂直懸掛的壓角籤條 */
         .stamp {
             display: inline-flex;
