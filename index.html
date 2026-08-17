@@ -112,20 +112,33 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-  h1.app-title {
+h1.app-title {
     position: relative;
-    color: #d4af37; 
-    font-size: 3.4em; 
-    letter-spacing: 24px; 
-    margin: 0 0 0 24px;
-    padding-left: 0;
-    font-weight: bold; /* ✨ 已加粗 */
-    font-family: var(--font-book); 
-    text-shadow: 0 4px 20px rgba(0,0,0,0.9); 
+    margin: 0 auto;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2;
+}
+
+/* ✨ 小篆向量字體專屬光澤與陰影 */
+.zhuan-title-svg {
+    height: 70px;
+    width: auto;
+    max-width: 80%;
+    color: #d4af37; /* 經典金黃色 */
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.9)) 
+            drop-shadow(0 0 4px rgba(212, 175, 55, 0.4));
+    transition: all 0.3s ease;
+}
+
+/* 手機端自動縮小適配 */
+@media (max-width: 849px) {
+    .zhuan-title-svg {
+        height: 48px;
+        max-width: 65%;
+    }
 }
         /* 破格設計：將「神思」轉為垂直懸掛的壓角籤條 */
         .stamp {
@@ -644,7 +657,43 @@
 <div class="book-container">
     <div class="book-page">
         <header>
-            <h1 class="app-title">文言特訓</h1>
+          <h1 class="app-title" title="文言特訓">
+    <svg class="zhuan-title-svg" viewBox="0 0 460 90" fill="currentColor">
+        <!-- 「文」字小篆 -->
+        <g transform="translate(10, 5)">
+            <path d="M45,10 C45,18 40,24 32,28 C45,34 58,45 68,62 C71,67 67,72 61,70 C53,56 42,46 32,40 C22,46 11,56 3,70 C-2,72 -2,67 2,62 C12,45 25,34 38,28 C30,24 25,18 25,10 C25,4 45,4 45,10 Z M35,16 C35,21 35,21 35,21 C35,21 35,21 35,16 Z" />
+            <path d="M12,18 C28,18 42,18 58,18" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+            <path d="M35,12 L35,32" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M35,32 C20,44 8,60 5,75 M35,32 C50,44 62,60 65,75" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+        </g>
+
+        <!-- 「言」字小篆 -->
+        <g transform="translate(125, 5)">
+            <path d="M35,8 L35,22 M15,22 L55,22 M20,32 L50,32 M20,42 L50,42" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+            <!-- 口部小篆圓弧轉折 -->
+            <path d="M22,54 C22,48 48,48 48,54 L48,72 C48,78 22,78 22,72 Z" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round" fill="none"/>
+            <path d="M35,22 L35,48" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        </g>
+
+        <!-- 「特」字小篆 (牛+寺) -->
+        <g transform="translate(240, 5)">
+            <!-- 牛旁小篆 -->
+            <path d="M10,22 C18,14 30,16 32,24 L32,74 M5,38 L32,34 M5,56 L32,46" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+            <!-- 寺旁小篆 (土+寸) -->
+            <path d="M52,10 L52,38 M40,24 L64,24 M38,38 L66,38" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+            <path d="M52,38 L52,66 C52,76 42,76 38,72 M42,50 C48,50 62,50 62,56" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+        </g>
+
+        <!-- 「訓」字小篆 (言+川) -->
+        <g transform="translate(355, 5)">
+            <!-- 言旁小篆 -->
+            <path d="M22,10 L22,20 M8,20 L36,20 M12,28 L32,28 M12,36 L32,36" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <path d="M14,46 C14,42 30,42 30,46 L30,62 C30,66 14,66 14,62 Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round" fill="none"/>
+            <!-- 川旁小篆曲水紋 -->
+            <path d="M44,14 C40,30 40,50 44,72 M54,12 L54,74 M64,14 C68,30 68,50 64,72" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+        </g>
+    </svg>
+</h1>
             
             <div class="header-actions">
                 <!-- 字詞庫按鈕 -->
