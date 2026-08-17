@@ -640,6 +640,28 @@
             color: var(--ink-black);
         }
 
+        /* Iframe 檢索面板 */
+        .iframe-modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); z-index: 4000;
+            display: none; justify-content: center; align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .iframe-modal.active { display: flex; }
+        .iframe-content {
+            background: var(--paper-bg); border: 2px solid var(--border-line);
+            border-radius: 6px; width: 95%; max-width: 900px; height: 85vh;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .iframe-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px; border-bottom: 2px solid var(--border-line); 
+            background: var(--panel-bg);
+        }
+        .iframe-header h3 { margin: 0; font-size: 1.3em; color: var(--ink-black); letter-spacing: 2px; }
+        .iframe-body { flex: 1; width: 100%; border: none; background: #fff; }
+
     </style>
 </head>
 <body>
@@ -726,13 +748,10 @@
                     <!-- 加入最愛按鈕 -->
                     <button id="btn-toggle-fav" class="icon-btn" onclick="toggleCurrentFavorite()" title="加入/移除最愛" style="border: none; padding: 6px;"></button>
                     <!-- 語音吟誦按鈕 -->
-                    <button id="btn-tts" class="icon-btn btn-danger" onclick="toggleTTS()" title="吟誦此卷">
-                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                        吟誦
-                    </button>
+                
                 </div>
             </div>
-            <div id="progress-wrapper" class="progress-wrapper"><div class="progress-bar-bg"><div id="progress-bar-fill" class="progress-bar-fill"></div></div></div>
+         
 
             <div class="article-wrap">
                 <div id="p-title" class="p-title"></div>
@@ -746,6 +765,16 @@
 
 <div id="search-popup" onclick="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+</div>
+
+    <div id="iframe-search-modal" class="iframe-modal">
+    <div class="iframe-content">
+        <div class="iframe-header">
+            <h3 id="iframe-title">檢索解惑</h3>
+            <button class="panel-close" onclick="closeIframeSearch()">×</button>
+        </div>
+        <iframe id="search-iframe" class="iframe-body" src=""></iframe>
+    </div>
 </div>
 
 <!-- ✨ 新增：行內注釋懸浮提示窗 (Tooltip) -->
@@ -1492,9 +1521,9 @@
 
     /* ======================================================== */
 
-    function openDetail(p) {
+   function openDetail(p) {
         currentPoem = p;
-        stopTTS();
+        // stopTTS(); // (稍後會移除 TTS，這行先註解或刪除)
         closePanel(); 
         hideVocabTooltip();
         
@@ -1504,28 +1533,31 @@
 
         document.getElementById('p-title').innerText = title;
         document.getElementById('p-author').innerText = `〔${dyn}〕 ${writer}`;
-
-        let transStr = removeBrackets(safeConvert(p.translation));
-        let remarkStr = safeConvert(p.remark);
-        let shangxiStr = removeBrackets(safeConvert(p.shangxi));
-
-        // ✨ 執行注釋提取與正文高亮替換
-        let extractedVocabs = extractVocabs(remarkStr);
-        let contentStr = cleanClassicalContent(safeConvert(p.content));
-        let highlightedContent = highlightVocabsInContent(contentStr, extractedVocabs);
-
-        // 將替換好的 HTML 放回 DOM
-        document.getElementById('p-content-unified').innerHTML = wrapParagraphs(highlightedContent);
-
-        // 更新各個面板的快取
-        cacheRemark = parseRemarksToTableFromList(extractedVocabs);
-        cacheTranslation = transStr ? `<div class="morandi-text">${wrapParagraphs(transStr)}</div>` : '<div class="empty">卷宗殘缺，暫無譯文</div>';
-        cacheShangxi = shangxiStr ? `<div class="morandi-text">${wrapParagraphs(shangxiStr)}</div>` : '<div class="empty">卷宗殘缺，暫無賞析</div>';
+        
+        // 先顯示過場提示，不阻塞 UI 渲染
+        document.getElementById('p-content-unified').innerHTML = '<div class="empty">正在解析卷宗，請稍候...</div>';
 
         updateFavIcon();
         document.getElementById('fab-bar').style.display = 'flex';
         showView('view-detail');
         window.scrollTo(0, 0);
+
+        // 延遲 50 毫秒執行繁重的文字處理，確保畫面切換動畫保持極致流暢
+        setTimeout(() => {
+            let transStr = removeBrackets(safeConvert(p.translation));
+            let remarkStr = safeConvert(p.remark);
+            let shangxiStr = removeBrackets(safeConvert(p.shangxi));
+
+            let extractedVocabs = extractVocabs(remarkStr);
+            let contentStr = cleanClassicalContent(safeConvert(p.content));
+            let highlightedContent = highlightVocabsInContent(contentStr, extractedVocabs);
+
+            document.getElementById('p-content-unified').innerHTML = wrapParagraphs(highlightedContent);
+
+            cacheRemark = parseRemarksToTableFromList(extractedVocabs);
+            cacheTranslation = transStr ? `<div class="morandi-text">${wrapParagraphs(transStr)}</div>` : '<div class="empty">卷宗殘缺，暫無譯文</div>';
+            cacheShangxi = shangxiStr ? `<div class="morandi-text">${wrapParagraphs(shangxiStr)}</div>` : '<div class="empty">卷宗殘缺，暫無賞析</div>';
+        }, 50);
     }
 
     function closePoem() {
@@ -1588,15 +1620,25 @@
         }
     });
 
-    function execGoogleSearch(e) {
+   function execGoogleSearch(e) {
         if(e) { e.preventDefault(); e.stopPropagation(); }
         if(lastSelectedText) {
-            // 改為純粹的 '_blank'，移除 width/height 參數，這樣 iOS Safari 就會乖乖開新分頁而不會阻擋
-            window.open('https://www.google.com/search?q=' + encodeURIComponent(`「${lastSelectedText}」 意思`), '_blank');
+            // 加入 &igu=1 嘗試讓 Google 允許 Iframe 嵌入
+            const searchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(`「${lastSelectedText}」 意思`) + '&igu=1';
+            
+            document.getElementById('iframe-title').innerText = `檢索：${lastSelectedText}`;
+            document.getElementById('search-iframe').src = searchUrl;
+            document.getElementById('iframe-search-modal').classList.add('active');
+            
             window.getSelection().removeAllRanges();
             document.getElementById('search-popup').style.display = 'none';
             lastSelectedText = "";
         }
+    }
+
+    function closeIframeSearch() {
+        document.getElementById('iframe-search-modal').classList.remove('active');
+        document.getElementById('search-iframe').src = ''; // 清空 src 釋放記憶體
     }
     // 改寫：更新本機資料庫並同步所有快取 UI (Tooltip / 側邊面板)
     function toggleVocab(encVocab, encExp, btn) {
@@ -1671,26 +1713,31 @@
         renderVocabBook();
     }
 
-    function openPanel(type) {
-        hideVocabTooltip(); // 開啟側邊欄時自動隱藏懸浮窗
+   function openPanel(type) {
+        hideVocabTooltip();
         const panel = document.getElementById('overlay-panel');
         const title = document.getElementById('panel-title');
         const body = document.getElementById('panel-body');
         
-        if (type === 'remark') {
-            title.innerText = '注釋解析';
-            body.innerHTML = cacheRemark;
-        } else if (type === 'translation') {
-            title.innerText = '白話譯文';
-            body.innerHTML = cacheTranslation;
-        } else if (type === 'shangxi') {
-            title.innerText = '賞析點評';
-            body.innerHTML = cacheShangxi;
-        }
-        
+        // 先執行 CSS 抽屜滑出動畫
         panel.classList.add('open');
         document.body.classList.add('panel-open');
-        body.scrollTop = 0;
+        body.innerHTML = '<div class="empty">載入中...</div>';
+        
+        // 延遲渲染龐大的 DOM 結構，避免抽屜滑出時卡頓
+        setTimeout(() => {
+            if (type === 'remark') {
+                title.innerText = '注釋解析';
+                body.innerHTML = cacheRemark;
+            } else if (type === 'translation') {
+                title.innerText = '白話譯文';
+                body.innerHTML = cacheTranslation;
+            } else if (type === 'shangxi') {
+                title.innerText = '賞析點評';
+                body.innerHTML = cacheShangxi;
+            }
+            body.scrollTop = 0;
+        }, 150);
     }
 
     function closePanel() {
