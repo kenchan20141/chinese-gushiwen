@@ -63,14 +63,23 @@
         .view { display: none; }
         .view.active { display: block; animation: inkFadeIn 0.5s ease both; }
 
-        header {
+      /* --- 景泰藍匾額橫額 --- */
+ header {
             position: relative;
-            text-align: center; border-bottom: 2px solid var(--border-line);
-            padding-bottom: 15px; margin-bottom: 25px;
+            text-align: center; 
+            background: linear-gradient(135deg, #184259 0%, #266482 100%);
+            border-bottom: 2px solid var(--border-line); 
+            
+            /* ✨ 關鍵修改：使用負邊距抵銷書頁的 padding (上40px, 左右50px)，使其 100% 撐滿 */
+            margin: -40px -50px 25px -50px;
+            /* 調整內部上下留白，讓文字與邊界保持距離 */
+            padding: 30px 15px 20px 15px; 
+            
+            border-radius: 4px 4px 0 0; /* 讓最上面兩個角貼合書本微圓角 */
         }
 
         .header-actions {
-            position: absolute; right: 10px; bottom: 15px;
+            position: absolute; right: 15px; bottom: 15px;
             display: flex; gap: 12px; align-items: center;
         }
 
@@ -82,15 +91,15 @@
         .header-btn:hover { transform: scale(1.15); }
 
         h1.app-title {
-            color: var(--ink-black); font-size: 2.8em; letter-spacing: 8px;
-            margin: 0 0 10px 0; font-weight: 700;
+            color: #F0D695; /* 泥金色文字 */
+            font-size: 2.8em; 
+            letter-spacing: 12px;
+            margin: 0; 
+            padding-left: 12px; /* 補齊 letter-spacing 造成的視覺偏移 */
+            font-weight: 700;
+            text-shadow: 2px 3px 6px rgba(0,0,0,0.5); /* 深刻的陰影提升立體感 */
         }
-
-        .stamp {
-            display: inline-block; color: var(--cinnabar-red); border: 2px solid var(--cinnabar-red);
-            padding: 2px 8px; font-size: 0.9em; font-weight: 700; border-radius: 4px;
-            transform: rotate(-3deg); opacity: 0.85; letter-spacing: 2px; margin-left: 10px;
-        }
+    
 
         .loading-container { text-align: center; margin-top: 20vh; }
         .yin-yang {
@@ -369,8 +378,12 @@
         @media (max-width: 849px) {
             .book-container { margin: 0; min-height: 100vh; outline: none; border: none; box-shadow: none; }
             .book-page { padding: 20px 15px; }
-            h1.app-title { font-size: 1.8em; padding: 0 80px; box-sizing: border-box; }
-            .stamp { font-size: 0.7em; margin-left: 6px; vertical-align: middle; }
+            header { 
+                margin: -20px -15px 20px -15px; 
+                padding: 20px 10px 15px 10px; 
+            }
+            h1.app-title { font-size: 1.8em; letter-spacing: 8px; padding-left: 8px; margin: 0 70px; }
+     
             .content-area { font-size: 1.3em; }
             
             .overlay-panel {
@@ -589,13 +602,13 @@
 
 <div class="book-container">
     <div class="book-page">
-        <header>
-            <h1 class="app-title">文言特訓<span class="stamp">神思</span></h1>
+   <header>
+            <h1 class="app-title">文言特訓</h1>
             
             <div class="header-actions">
-                <!-- 字詞庫按鈕 -->
+                <!-- 字詞庫按鈕：改為亮灰色 #E0E0E0 -->
                 <button class="header-btn" onclick="openVocabBook()" title="字詞庫 (生詞本)">
-                    <svg viewBox="0 0 24 24" width="28" height="28" stroke="var(--ink-gray)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    <svg viewBox="0 0 24 24" width="28" height="28" stroke="#E0E0E0" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
                 </button>
                 <!-- 我的最愛按鈕 -->
                 <button class="header-btn" onclick="openFavorites()" title="我的最愛">
@@ -603,10 +616,9 @@
                 </button>
             </div>
         </header>
-
         <div id="view-loading" class="view active loading-container">
             <div class="yin-yang"></div>
-            <h2>正在展卷</h2>
+            <h2>正在展開典籍</h2>
         </div>
 
         <div id="view-categories" class="view">
