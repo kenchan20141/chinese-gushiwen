@@ -409,6 +409,118 @@
         vertical-align: middle; 
     }
 }
+
+
+
+/* ---------------- 首頁主卡片：古籍線裝書設計 ---------------- */
+/* ---------------- 首頁主卡片：古籍與題簽分離設計 ---------------- */
+#main-category-grid {
+    display: flex;
+    justify-content: center;
+    gap: 60px; /* 增加兩本書之間的間距 */
+    margin-top: 35px;
+    padding-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+/* 新增：外層容器。負責把書和印章垂直排列，並置中 */
+.category-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px; /* 書本與下方印章的距離 */
+    cursor: pointer;
+}
+
+/* 書本圖案本身 (內部不再放印章) */
+.classic-book-card {
+    position: relative;
+    width: 160px;
+    height: 240px;
+    border: 1px solid var(--border-line);
+    box-shadow: 5px 8px 15px rgba(0,0,0,0.08);
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    overflow: hidden;
+}
+
+/* 書名：直排、靠右置中 */
+.classic-book-card h3 {
+    writing-mode: vertical-rl;
+    letter-spacing: 12px;
+    font-size: 1.75em;
+    position: absolute;
+    top: 35px;
+    right: 40px;
+    margin: 0;
+    z-index: 2;
+    font-weight: bold;
+}
+
+/* 模擬線裝書的裝訂線 */
+.classic-book-card::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 20px;
+    bottom: 20px;
+    width: 0;
+    border-left: 2px dashed;
+    opacity: 0.6;
+}
+
+/* 右下角浮水印大字 */
+.classic-book-card::after {
+    content: attr(data-bg-char);
+    position: absolute;
+    bottom: -20px;
+    right: -15px;
+    font-size: 110px;
+    font-family: var(--font-book);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* --- 主題 1：藏青古籍 (古文觀止) --- */
+.theme-blue {
+    background: linear-gradient(to right, #1f3752 0%, #1f3752 18%, #2c4f70 18%, #2c4f70 100%);
+    border-color: #15273b;
+}
+.theme-blue h3 { color: #f4ecd8; } 
+.theme-blue::before { border-color: rgba(255, 255, 255, 0.4); }
+.theme-blue::after { color: rgba(255, 255, 255, 0.04); }
+
+/* --- 主題 2：宣紙米黃 (歷代詩文) --- */
+.theme-yellow {
+    background: linear-gradient(to right, #e8dcc3 0%, #e8dcc3 18%, #faf4e3 18%, #faf4e3 100%);
+}
+.theme-yellow h3 { color: var(--ink-black); }
+.theme-yellow::before { border-color: var(--ink-gray); }
+.theme-yellow::after { color: rgba(43,43,43,0.03); }
+
+/* --- 卷數印章：獨立在書本正下方 --- */
+.book-stamp {
+    border: 2px solid var(--cinnabar-red);
+    color: var(--cinnabar-red);
+    padding: 5px 16px;
+    font-size: 1.1em; 
+    font-family: var(--font-book); /* 優雅文藝字體 */
+    font-weight: bold;
+    letter-spacing: 3px;
+    background: #faf4e3;
+    border-radius: 4px; 
+    transition: all 0.3s ease;
+}
+
+/* 懸停聯動效果：滑鼠只要碰到這個區塊，書和印章都會產生動畫 */
+.category-wrapper:hover .classic-book-card {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 10px 15px 25px rgba(0,0,0,0.15);
+}
+.category-wrapper:hover .book-stamp {
+    transform: scale(1.05);
+    background: #fff9f0;
+    box-shadow: 0 4px 10px rgba(167, 51, 34, 0.15); 
+}
         
     </style>
 </head>
@@ -1416,41 +1528,63 @@ function correctClassicalChinese(twText) {
     }
 
  // 1. 取代原本的 renderCategories
-    function renderCategories() {
-        const mainGrid = document.getElementById('main-category-grid');
-        mainGrid.innerHTML = '';
+function renderCategories() {
+    const mainGrid = document.getElementById('main-category-grid');
+    mainGrid.innerHTML = '';
+    mainGrid.className = ''; 
 
-        // 生成「古文觀止」卡片
-        if (db["古文觀止"] && db["古文觀止"].length > 0) {
-            const btn1 = document.createElement('div');
-            btn1.className = 'card-btn';
-            btn1.innerHTML = `<h3>古文觀止</h3><p>${db["古文觀止"].length} 卷</p>`;
-            btn1.onclick = () => {
-                currentOpenedCategory = "古文觀止";
-                openDynasty("古文觀止");
-            };
-            mainGrid.appendChild(btn1);
-        }
-
-        // 計算歷代詩文的總卷數 (排除古文觀止與不要顯示的)
-        let totalPoetry = 0;
-        const excludedForPoetry = ["古文觀止", "近代", "現代", "未知"];
-        Object.keys(db).forEach(dyn => {
-            if (!excludedForPoetry.includes(dyn)) {
-                totalPoetry += db[dyn].length;
-            }
-        });
-
-        // 生成「歷代詩文」卡片
-        if (totalPoetry > 0) {
-            const btn2 = document.createElement('div');
-            btn2.className = 'card-btn';
-            btn2.innerHTML = `<h3>歷代詩文</h3><p>${totalPoetry} 卷</p>`;
-            btn2.onclick = () => openSubDynasties();
-            mainGrid.appendChild(btn2);
-        }
+    function toChineseNum(num) {
+        const chars = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+        return String(num).split('').map(n => chars[n]).join('');
     }
 
+    // 生成「古文觀止」卡片
+    if (db["古文觀止"] && db["古文觀止"].length > 0) {
+        // 建立外層大容器 (用來同時包住書和下方印章)
+        const wrapper1 = document.createElement('div');
+        wrapper1.className = 'category-wrapper';
+        wrapper1.onclick = () => {
+            currentOpenedCategory = "古文觀止";
+            openDynasty("古文觀止");
+        };
+
+        let countText = toChineseNum(db["古文觀止"].length);
+        wrapper1.innerHTML = `
+            <div class="classic-book-card theme-blue" data-bg-char="觀">
+                <h3>古文觀止</h3>
+            </div>
+            <div class="book-stamp">${countText}卷</div>
+        `;
+        mainGrid.appendChild(wrapper1);
+    }
+
+    // 計算歷代詩文的總卷數
+    let totalPoetry = 0;
+    const excludedForPoetry = ["古文觀止", "近代", "現代", "未知"];
+    Object.keys(db).forEach(dyn => {
+        if (!excludedForPoetry.includes(dyn)) {
+            totalPoetry += db[dyn].length;
+        }
+    });
+
+    // 生成「歷代詩文」卡片
+    if (totalPoetry > 0) {
+        const wrapper2 = document.createElement('div');
+        wrapper2.className = 'category-wrapper';
+        wrapper2.onclick = () => openSubDynasties();
+
+        let countText = toChineseNum(totalPoetry);
+        wrapper2.innerHTML = `
+            <div class="classic-book-card theme-yellow" data-bg-char="詩">
+                <h3>歷代詩文</h3>
+            </div>
+            <div class="book-stamp">${countText}卷</div>
+        `;
+        mainGrid.appendChild(wrapper2);
+    }
+}
+
+  
     // 2. 新增：渲染第二層「歷代朝代」選單的邏輯
     function openSubDynasties() {
         const grid = document.getElementById('dynasty-grid');
