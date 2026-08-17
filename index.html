@@ -38,7 +38,7 @@
             overscroll-behavior: none;
         }
 
-   .book-container {
+     .book-container {
             max-width: 900px; margin: 30px auto; 
             background: #faf4e3;
             border: 1px solid var(--border-line);
@@ -47,17 +47,10 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             min-height: 90vh; position: relative;
             animation: unfoldScroll 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            /* 🛑 只允許這三個屬性做動畫，絕對不寫 transition: all */
+            /* 🛑 這裡只允許 transform, opacity, box-shadow 有動畫 */
             transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .article-wrap {
-            background-color: #fcf9f2; border: 2px solid var(--border-line); outline: 1px solid var(--border-line);
-            outline-offset: -6px; padding: 50px 40px; margin: 20px auto 80px auto;
-            box-shadow: inset 0 0 30px rgba(167, 51, 34, 0.03), 0 8px 20px rgba(0,0,0,0.06);
-            /* 🛑 刪除了 transition: padding 0.3s ease; 保證滾動和改變留白時 0 卡頓 */
-            border-radius: 2px;
-        }
         @keyframes unfoldScroll {
             0% { transform: scaleX(0.01); opacity: 0; }
             50% { transform: scaleX(1); opacity: 1; }
@@ -66,7 +59,10 @@
 
         .book-page { padding: 40px 50px; animation: inkFadeIn 1.2s ease 0.4s both; }
 
-    
+        @keyframes inkFadeIn {
+            0% { opacity: 0; filter: blur(4px); transform: translateY(10px); }
+            100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+        }
 
         .view { display: none; }
         .view.active { display: block; animation: inkFadeIn 0.5s ease both; }
@@ -466,15 +462,11 @@
             .overlay-panel {
                 top: 0; right: 0; bottom: 0; width: var(--panel-width);
                 border-left: 2px solid var(--border-line);
-                transform: translateX(100%); /* 預設躲在右邊螢幕外 */
+                transform: translateX(100%);
             }
-            .overlay-panel.open { 
-                transform: translateX(0); /* 平滑滑出 (GPU負責，0負擔) */
-            }
+            .overlay-panel.open { transform: translateX(0); }
             
-            /* ✨ 電腦版終極方案：瞬間收縮。
-               不使用 transform 平移以免左側文字出界。
-               因為沒有 transition，所以瞬間讓出右側空間，CPU只排版1次，完美流暢。 */
+            /* ✨ 1. 書本瞬間收縮：動態計算剩餘寬度並讓出右側空間 */
             body.panel-open .book-container { 
                 transform: none; 
                 margin-left: 2vw;
@@ -482,7 +474,7 @@
                 max-width: calc(100vw - var(--panel-width) - 4vw);
             }
             
-            /* 修正底部懸浮按鈕的位置，讓它對齊剩餘的閱讀空間中心 */
+            /* ✨ 2. 懸浮按鈕置中修正：讓底部的「注釋/譯文」按鈕也對齊剩餘空間的中心 */
             body.panel-open .fab-bar {
                 left: calc((100vw - var(--panel-width)) / 2);
             }
@@ -494,28 +486,42 @@
             .vocab-grid { grid-template-columns: 1fr 1fr; }
         }
 
+
         
-      @media (max-width: 849px) {
+        @media (max-width: 849px) {
             .book-container { margin: 0; min-height: 100vh; outline: none; border: none; box-shadow: none; }
             .book-page { padding: 20px 15px; }
-            h1.app-title { font-size: 1.8em; padding: 0 80px; box-sizing: border-box; }
-            .stamp { font-size: 0.7em; margin-left: 6px; vertical-align: middle; }
+             /* 新增牌匾在手機端的縮放佈局 */
+            header {
+                margin: -20px -15px 35px -15px; /* 適應手機版邊距 */
+                padding: 30px 0;
+            }
+         h1.app-title { 
+                font-size: 2.2em; 
+                letter-spacing: 12px; 
+                padding-left: 25px;
+                margin: 0;
+                box-sizing: border-box;
+                justify-content: flex-start; /* ✨ 關鍵：僅在手機版靠左對齊 */
+            }
+            .stamp { 
+                font-size: 0.35em; 
+                padding: 12px 6px 6px 6px; 
+                transform: translateY(16px); 
+            }
+            .header-actions { right: 15px; gap: 8px; }
+            .header-btn { padding: 2px; }
+            .header-btn svg { width: 24px; height: 24px; }
             .content-area { font-size: 1.3em; }
             
             .overlay-panel {
                 bottom: 0; left: 0; right: 0; height: var(--panel-height);
                 border-top: 2px solid var(--border-line); border-radius: 15px 15px 0 0;
-                transform: translateY(100%); /* 預設躲在下方螢幕外 */
+                transform: translateY(100%);
             }
-            .overlay-panel.open { 
-                transform: translateY(0); /* 從下方平滑滑出 (GPU負責，0負擔) */
-            }
+            .overlay-panel.open { transform: translateY(0); }
             
-            /* ✨ 手機版專用：因為面板從下方彈出，不影響寬度，
-               只要瞬間在書本底部增加一段空白，讓使用者可以把最後一段字往上滾動即可。 */
-            body.panel-open .article-wrap { 
-                padding-bottom: calc(var(--panel-height) + 60px) !important; 
-            }
+            body.panel-open .article-wrap { padding-bottom: calc(var(--panel-height) + 60px); }
             
             .fab-bar { bottom: 15px; width: 90%; justify-content: space-around; }
             .remark-table th, .remark-table td { padding: 8px; }
@@ -525,6 +531,7 @@
             }
             .resizer-line { top: 6px; left: 50%; width: 40px; height: 4px; transform: translateX(-50%); }
         }
+
         /* ---------------- 首頁主卡片：古籍與題簽分離設計 ---------------- */
         #main-category-grid {
             display: flex; justify-content: center; gap: 60px; margin-top: 35px; padding-bottom: 30px; flex-wrap: wrap;
