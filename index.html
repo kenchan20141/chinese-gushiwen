@@ -1350,42 +1350,41 @@
     }
 
     // 2. 在正文中搜尋字詞，並標記為高亮。使用 PUA 防替換衝突
+   // 2. 在正文中搜尋字詞，並標記為高亮。(極速單次替換版)
     function highlightVocabsInContent(contentStr, vocabs) {
-        // 以字詞長度降序排列，避免「短詞」干擾「長詞」的高亮
-        let sorted = [...vocabs].sort((a, b) => b.vocab.length - a.vocab.length);
-        
-        let placeholders = [];
-        let processedText = contentStr;
-        
-        sorted.forEach((item, index) => {
-            if (item.vocab.length < 1) return;
-            
-            // 使用 Private Use Area 字符作為佔位符，保證絕不會與古文或英文字母衝突
-            let pKey = String.fromCharCode(0xE000 + index);
-            let safeVocab = item.vocab.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            let regex = new RegExp(safeVocab, 'g');
-            
-            if (regex.test(processedText)) {
-                processedText = processedText.replace(regex, pKey);
-                placeholders.push({
-                    key: pKey,
-                    vocab: item.vocab,
-                    exp: item.exp
-                });
+        if (!vocabs || vocabs.length === 0) return contentStr;
+
+        // 過濾空白並依長度遞減排序 (避免短詞搶走長詞，例如「天子」不能只配對到「天」)
+        let validVocabs = vocabs.filter(v => v.vocab && v.vocab.trim().length > 0);
+        validVocabs.sort((a, b) => b.vocab.length - a.vocab.length);
+
+        if (validVocabs.length === 0) return contentStr;
+
+        // 建立查表字典與 Regex 陣列
+        let vocabMap = new Map();
+        let regexParts = [];
+
+        validVocabs.forEach(item => {
+            if (!vocabMap.has(item.vocab)) {
+                vocabMap.set(item.vocab, item.exp);
+                // 處理特殊字元，避免正則表達式錯誤
+                regexParts.push(item.vocab.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
             }
         });
-        
-        // 將佔位符轉為帶有 onclick 事件的 HTML 元素
-        placeholders.forEach((p) => {
-            let encVocab = encodeURIComponent(p.vocab);
-            let encExp = encodeURIComponent(p.exp);
-            let span = `<span class="inline-vocab" onclick="showVocabTooltip(event, '${encVocab}', '${encExp}')">${p.vocab}</span>`;
-            processedText = processedText.replace(new RegExp(p.key, 'g'), span);
-        });
-        
-        return processedText;
-    }
 
+        // 組成單一且龐大的 Regex (例如：/長江|黃河|天子/g)
+        let combinedRegex = new RegExp(`(${regexParts.join('|')})`, 'g');
+
+        // 進行單次全域替換 (效能極大化，解決卡頓)
+        return contentStr.replace(combinedRegex, (match) => {
+            let exp = vocabMap.get(match);
+            if (!exp) return match; // 安全防護
+            let encVocab = encodeURIComponent(match);
+            let encExp = encodeURIComponent(exp);
+            return `<span class="inline-vocab" onclick="showVocabTooltip(event, '${encVocab}', '${encExp}')">${match}</span>`;
+        });
+    }
+    
     // 3. 生成側邊面板用的注釋表格 (改為吃 List)
     function parseRemarksToTableFromList(vocabs) {
         let safeTitle = currentPoem ? safeConvert(currentPoem.title) : '未知';
