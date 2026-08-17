@@ -369,7 +369,8 @@
         @media (max-width: 849px) {
             .book-container { margin: 0; min-height: 100vh; outline: none; border: none; box-shadow: none; }
             .book-page { padding: 20px 15px; }
-            h1.app-title { font-size: 2.2em; }
+            h1.app-title { font-size: 1.8em; padding: 0 80px; box-sizing: border-box; }
+            .stamp { font-size: 0.7em; margin-left: 6px; vertical-align: middle; }
             .content-area { font-size: 1.3em; }
             
             .overlay-panel {
@@ -390,235 +391,148 @@
             .resizer-line { top: 6px; left: 50%; width: 40px; height: 4px; transform: translateX(-50%); }
         }
 
+        /* ---------------- 首頁主卡片：古籍與題簽分離設計 ---------------- */
+        #main-category-grid {
+            display: flex; justify-content: center; gap: 60px; margin-top: 35px; padding-bottom: 30px; flex-wrap: wrap;
+        }
 
+        .category-wrapper { display: flex; flex-direction: column; align-items: center; gap: 15px; cursor: pointer; }
 
-@media (max-width: 849px) {
-    /* ...保留原本其他的設定... */
-    
-    /* 1. 修改這行：將字體稍微縮小，並加入左右 padding 讓出空間給按鈕 */
-    h1.app-title { 
-        font-size: 1.8em; 
-        padding: 0 80px; /* 左右保留 80px 空間避免與 SVG 按鈕重疊 */
-        box-sizing: border-box;
-    }
-    
-    /* 2. 新增這行：將手機版的印章等比例縮小，並微調間距 */
-    .stamp { 
-        font-size: 0.7em; 
-        margin-left: 6px; 
-        vertical-align: middle; 
-    }
-}
+        .classic-book-card {
+            position: relative; width: 160px; height: 240px; border: 1px solid var(--border-line);
+            box-shadow: 5px 8px 15px rgba(0,0,0,0.08); transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); overflow: hidden;
+        }
 
+        .classic-book-card h3 {
+            writing-mode: vertical-rl; letter-spacing: 12px; font-size: 1.75em;
+            position: absolute; top: 35px; right: 40px; margin: 0; z-index: 2; font-weight: bold;
+        }
 
+        .classic-book-card::before { content: ""; position: absolute; left: 10px; top: 20px; bottom: 20px; width: 0; border-left: 2px dashed; opacity: 0.6; }
+        .classic-book-card::after {
+            content: attr(data-bg-char); position: absolute; bottom: -20px; right: -15px;
+            font-size: 110px; font-family: var(--font-book); z-index: 1; pointer-events: none;
+        }
 
-/* ---------------- 首頁主卡片：古籍線裝書設計 ---------------- */
-/* ---------------- 首頁主卡片：古籍與題簽分離設計 ---------------- */
-#main-category-grid {
-    display: flex;
-    justify-content: center;
-    gap: 60px; /* 增加兩本書之間的間距 */
-    margin-top: 35px;
-    padding-bottom: 30px;
-    flex-wrap: wrap;
-}
+        .theme-blue { background: linear-gradient(to right, #1f3752 0%, #1f3752 18%, #2c4f70 18%, #2c4f70 100%); border-color: #15273b; }
+        .theme-blue h3 { color: #f4ecd8; } 
+        .theme-blue::before { border-color: rgba(255, 255, 255, 0.4); }
+        .theme-blue::after { color: rgba(255, 255, 255, 0.04); }
 
-/* 新增：外層容器。負責把書和印章垂直排列，並置中 */
-.category-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px; /* 書本與下方印章的距離 */
-    cursor: pointer;
-}
+        .theme-yellow { background: linear-gradient(to right, #e8dcc3 0%, #e8dcc3 18%, #faf4e3 18%, #faf4e3 100%); }
+        .theme-yellow h3 { color: var(--ink-black); }
+        .theme-yellow::before { border-color: var(--ink-gray); }
+        .theme-yellow::after { color: rgba(43,43,43,0.03); }
 
-/* 書本圖案本身 (內部不再放印章) */
-.classic-book-card {
-    position: relative;
-    width: 160px;
-    height: 240px;
-    border: 1px solid var(--border-line);
-    box-shadow: 5px 8px 15px rgba(0,0,0,0.08);
-    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-    overflow: hidden;
-}
+        .book-stamp {
+            border: 2px solid var(--cinnabar-red); color: var(--cinnabar-red); padding: 5px 16px;
+            font-size: 1.1em; font-family: var(--font-book); font-weight: bold; letter-spacing: 3px;
+            background: #faf4e3; border-radius: 4px; transition: all 0.3s ease;
+        }
 
-/* 書名：直排、靠右置中 */
-.classic-book-card h3 {
-    writing-mode: vertical-rl;
-    letter-spacing: 12px;
-    font-size: 1.75em;
-    position: absolute;
-    top: 35px;
-    right: 40px;
-    margin: 0;
-    z-index: 2;
-    font-weight: bold;
-}
-
-/* 模擬線裝書的裝訂線 */
-.classic-book-card::before {
-    content: "";
-    position: absolute;
-    left: 10px;
-    top: 20px;
-    bottom: 20px;
-    width: 0;
-    border-left: 2px dashed;
-    opacity: 0.6;
-}
-
-/* 右下角浮水印大字 */
-.classic-book-card::after {
-    content: attr(data-bg-char);
-    position: absolute;
-    bottom: -20px;
-    right: -15px;
-    font-size: 110px;
-    font-family: var(--font-book);
-    z-index: 1;
-    pointer-events: none;
-}
-
-/* --- 主題 1：藏青古籍 (古文觀止) --- */
-.theme-blue {
-    background: linear-gradient(to right, #1f3752 0%, #1f3752 18%, #2c4f70 18%, #2c4f70 100%);
-    border-color: #15273b;
-}
-.theme-blue h3 { color: #f4ecd8; } 
-.theme-blue::before { border-color: rgba(255, 255, 255, 0.4); }
-.theme-blue::after { color: rgba(255, 255, 255, 0.04); }
-
-/* --- 主題 2：宣紙米黃 (歷代詩文) --- */
-.theme-yellow {
-    background: linear-gradient(to right, #e8dcc3 0%, #e8dcc3 18%, #faf4e3 18%, #faf4e3 100%);
-}
-.theme-yellow h3 { color: var(--ink-black); }
-.theme-yellow::before { border-color: var(--ink-gray); }
-.theme-yellow::after { color: rgba(43,43,43,0.03); }
-
-/* --- 卷數印章：獨立在書本正下方 --- */
-.book-stamp {
-    border: 2px solid var(--cinnabar-red);
-    color: var(--cinnabar-red);
-    padding: 5px 16px;
-    font-size: 1.1em; 
-    font-family: var(--font-book); /* 優雅文藝字體 */
-    font-weight: bold;
-    letter-spacing: 3px;
-    background: #faf4e3;
-    border-radius: 4px; 
-    transition: all 0.3s ease;
-}
-
-/* 懸停聯動效果：滑鼠只要碰到這個區塊，書和印章都會產生動畫 */
-.category-wrapper:hover .classic-book-card {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 10px 15px 25px rgba(0,0,0,0.15);
-}
-.category-wrapper:hover .book-stamp {
-    transform: scale(1.05);
-    background: #fff9f0;
-    box-shadow: 0 4px 10px rgba(167, 51, 34, 0.15); 
-}
+        .category-wrapper:hover .classic-book-card { transform: translateY(-8px) scale(1.02); box-shadow: 10px 15px 25px rgba(0,0,0,0.15); }
+        .category-wrapper:hover .book-stamp { transform: scale(1.05); background: #fff9f0; box-shadow: 0 4px 10px rgba(167, 51, 34, 0.15); }
 
         /* =========================================
-   ✨ 橫排信箋風格：沉浸式古籍閱讀體驗
-   ========================================= */
+           ✨ 橫排信箋風格：沉浸式古籍閱讀體驗
+           ========================================= */
+        .article-wrap {
+            background-color: #fcf9f2; border: 2px solid var(--border-line); outline: 1px solid var(--border-line);
+            outline-offset: -6px; padding: 50px 40px; margin: 20px auto 80px auto;
+            box-shadow: inset 0 0 30px rgba(167, 51, 34, 0.03), 0 8px 20px rgba(0,0,0,0.06);
+            transition: padding 0.3s ease; border-radius: 2px;
+        }
 
-/* 1. 外框：模擬古籍的雙邊框與箋紙質感 */
-.article-wrap {
-    background-color: #fcf9f2; /* 稍微提亮的特製紙色 */
-    border: 2px solid var(--border-line); 
-    outline: 1px solid var(--border-line);
-    outline-offset: -6px; /* 內縮形成傳統「四周雙邊」效果 */
-    padding: 50px 40px;
-    margin: 20px auto 80px auto; /* 底部留白避免貼底 */
-    box-shadow: 
-        inset 0 0 30px rgba(167, 51, 34, 0.03), /* 微微泛紅的年代感 */
-        0 8px 20px rgba(0,0,0,0.06);
-    transition: padding 0.3s ease;
-    border-radius: 2px;
-}
+        .p-title {
+            text-align: center; font-size: 2.4em; font-weight: bold; letter-spacing: 6px; color: var(--ink-black);
+            margin-bottom: 10px; position: relative;
+        }
+        .p-title::after {
+            content: ""; display: block; width: 50px; height: 3px; background-color: var(--cinnabar-red);
+            margin: 15px auto 0; opacity: 0.8; border-radius: 2px;
+        }
+        .p-author { text-align: center; color: var(--ink-gray); font-size: 1.15em; letter-spacing: 4px; margin-bottom: 45px; }
 
-/* 2. 標題：加入印泥質感的底線分隔 */
-.p-title {
-    text-align: center; 
-    font-size: 2.4em; 
-    font-weight: bold; 
-    letter-spacing: 6px; 
-    color: var(--ink-black);
-    margin-bottom: 10px;
-    position: relative;
-}
-.p-title::after {
-    content: "";
-    display: block;
-    width: 50px;
-    height: 3px;
-    background-color: var(--cinnabar-red); /* 朱砂紅裝飾線 */
-    margin: 15px auto 0;
-    opacity: 0.8;
-    border-radius: 2px;
-}
+        .content-area {
+            font-size: 1.45em; line-height: 2.2em; letter-spacing: 2px;
+            background-image: repeating-linear-gradient(to bottom, transparent, transparent calc(2.2em - 1px), rgba(167, 51, 34, 0.15) calc(2.2em - 1px), rgba(167, 51, 34, 0.15) 2.2em);
+            background-size: 100% 2.2em; background-position: top left; padding-top: 0.1em;
+        }
 
-/* 3. 作者：優雅的間距 */
-.p-author {
-    text-align: center; 
-    color: var(--ink-gray); 
-    font-size: 1.15em; 
-    letter-spacing: 4px; 
-    margin-bottom: 45px;
-}
+        .article-wrap .morandi-text p {
+            text-indent: 2em; margin: 0 0 2.2em 0; text-align: justify; text-justify: inter-ideograph;
+            transition: color 0.3s ease; text-shadow: 0.5px 0.5px 0px rgba(0,0,0,0.1);
+        }
 
-/* 4. 正文區域：注入靈魂的「橫向朱絲欄」信箋格線 */
-.content-area {
-    font-size: 1.45em; 
-    line-height: 2.2em; /* 鎖死行高，這非常重要 */
-    letter-spacing: 2px;
-    
-    /* 繪製橫向紅線，間距與行高 (2.2em) 完美吻合 */
-    background-image: repeating-linear-gradient(
-        to bottom,
-        transparent,
-        transparent calc(2.2em - 1px),
-        rgba(167, 51, 34, 0.15) calc(2.2em - 1px),
-        rgba(167, 51, 34, 0.15) 2.2em
-    );
-    background-size: 100% 2.2em;
-    background-position: top left;
-    
-    padding-top: 0.1em; /* 微調讓文字剛好「踩」在線上 */
-}
+        .article-wrap .morandi-text p:nth-of-type(5n+1) { color: #2b2b2b; }
+        .article-wrap .morandi-text p:nth-of-type(5n+2) { color: #3d7a60; }
+        .article-wrap .morandi-text p:nth-of-type(5n+3) { color: #3b6b96; }
+        .article-wrap .morandi-text p:nth-of-type(5n+4) { color: #9e4a41; }
+        .article-wrap .morandi-text p:nth-of-type(5n+5) { color: #7a5885; }
 
-/* 5. 段落控制：為了不破壞格線，段落間距必須是行高的倍數 */
-.article-wrap .morandi-text p {
-    text-indent: 2em; /* 首行縮排兩格 */
-    margin: 0 0 2.2em 0; /* 段落間距為一整行 (2.2em)，確保跨段落時文字不跑格 */
-    text-align: justify;
-    text-justify: inter-ideograph;
-    transition: color 0.3s ease;
-    text-shadow: 0.5px 0.5px 0px rgba(0,0,0,0.1); /* 微微的墨水暈染感 */
-}
+        @media (max-width: 849px) {
+            .article-wrap { padding: 30px 20px; outline-offset: -4px; }
+            body.panel-open .article-wrap { padding-bottom: calc(var(--panel-height) + 60px) !important; }
+        }
 
-/* ✨ 恢復：段落顏色循環 (莫蘭迪色系)，搭配信箋底線更顯層次 ✨ */
-.article-wrap .morandi-text p:nth-of-type(5n+1) { color: #2b2b2b; } /* 濃黑 */
-.article-wrap .morandi-text p:nth-of-type(5n+2) { color: #3d7a60; } /* 竹青 */
-.article-wrap .morandi-text p:nth-of-type(5n+3) { color: #3b6b96; } /* 藏青 */
-.article-wrap .morandi-text p:nth-of-type(5n+4) { color: #9e4a41; } /* 胭脂 */
-.article-wrap .morandi-text p:nth-of-type(5n+5) { color: #7a5885; } /* 檀灰 */
+        /* =========================================
+           ✨ 新增：行內注釋與 Tooltip 懸浮提示樣式
+           ========================================= */
+        .inline-vocab {
+            color: var(--cinnabar-red);
+            text-decoration: underline;
+            text-decoration-style: dashed;
+            text-underline-offset: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            border-radius: 2px;
+            position: relative;
+        }
+        .inline-vocab:hover {
+            background-color: rgba(167, 51, 34, 0.1);
+        }
 
-/* --- 手機版適配微調 --- */
-@media (max-width: 849px) {
-    .article-wrap {
-        padding: 30px 20px;
-        outline-offset: -4px;
-    }
-    body.panel-open .article-wrap { 
-        padding-bottom: calc(var(--panel-height) + 60px) !important; 
-    }
-}
-        
+        .vocab-tooltip {
+            position: absolute;
+            z-index: 2005;
+            background: var(--panel-bg);
+            border: 2px solid var(--border-line);
+            border-radius: 6px;
+            padding: 15px;
+            width: 280px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            display: none;
+            font-size: 1.15em;
+            line-height: 1.6;
+            color: var(--ink-black);
+            font-family: var(--font-book);
+            background-image: 
+                linear-gradient(90deg, rgba(43,43,43,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(43,43,43,0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: auto;
+        }
+
+        .tooltip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed var(--ink-gray);
+            padding-bottom: 5px;
+        }
+        .tooltip-vocab {
+            font-weight: bold;
+            color: var(--cinnabar-red);
+            font-size: 1.25em;
+            letter-spacing: 2px;
+        }
+        .tooltip-exp {
+            text-align: justify;
+            text-justify: inter-ideograph;
+            color: var(--ink-black);
+        }
+
     </style>
 </head>
 <body>
@@ -643,18 +557,14 @@
         <div id="view-loading" class="view active loading-container">
             <div class="yin-yang"></div>
             <h2>正在展卷</h2>
-     
         </div>
 
-       <!-- 1. 修改原本的首頁 (view-categories) -->
         <div id="view-categories" class="view">
             <h2 style="text-align:center; letter-spacing: 4px; border-bottom: 1px solid #ccc; display:inline-block; margin: 0 auto; padding-bottom: 10px;">經典卷宗</h2>
             <div style="text-align:center;"><br></div>
-            <!-- 注意這裡的 ID 改為 main-category-grid -->
             <div id="main-category-grid" class="grid"></div>
         </div>
 
-        <!-- 2. 新增一個「歷代詩文」的次選單 (view-sub-dynasties) -->
         <div id="view-sub-dynasties" class="view">
             <div class="toolbar">
                 <button class="icon-btn" onclick="showView('view-categories')" title="返回主目錄">
@@ -663,14 +573,11 @@
                 <h2 style="margin:0; letter-spacing: 4px;">歷代詩文</h2>
                 <div style="width: 50px;"></div>
             </div>
-            <!-- 原本朝代生成的 grid 放在這裡 -->
             <div id="dynasty-grid" class="grid"></div>
         </div>
 
-        <!-- 3. 修改 view-list 裡面的「返回」按鈕 -->
         <div id="view-list" class="view">
             <div class="toolbar">
-                <!-- 將原本的 onclick="showView('view-categories')" 改為 onclick="goBackFromList()" -->
                 <button class="icon-btn" onclick="goBackFromList()" title="返回">
                     <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 </button>
@@ -688,7 +595,6 @@
             <div id="poem-list" class="poem-grid"></div>
         </div>
 
-        <!-- 字詞庫視圖 -->
         <div id="view-vocab" class="view">
             <div class="toolbar">
                 <button class="icon-btn" onclick="showView('view-categories')" title="返回主頁">
@@ -731,10 +637,12 @@
     </div>
 </div>
 
-<!-- 找到這行並加上 ontouchstart="execGoogleSearch(event)" -->
 <div id="search-popup" onmousedown="execGoogleSearch(event)" ontouchstart="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
 </div>
+
+<!-- ✨ 新增：行內注釋懸浮提示窗 (Tooltip) -->
+<div id="vocab-tooltip" class="vocab-tooltip"></div>
 
 <div id="fab-bar" class="fab-bar">
     <button class="icon-btn" onclick="openPanel('remark')">
@@ -760,7 +668,6 @@
     <div id="panel-body" class="panel-body"></div>
 </div>
 
-<!-- AI 出卷設定 Modal -->
 <div id="quiz-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
@@ -768,7 +675,6 @@
             <button class="panel-close" onclick="closeQuizModal()">×</button>
         </div>
         <div class="modal-body">
-         
             <div class="quiz-option">
                 <label><input type="checkbox" id="chk-mc" checked> 多項選擇題 (MC)</label>
                 <div><input type="number" id="num-mc" value="5" min="0" max="20"> 題</div>
@@ -791,14 +697,14 @@
 
 <script>
     let currentOpenedCategory = "";
-   const dynastyOrder = ["古文觀止","先秦","秦代","漢代","兩漢","魏晉","南北朝","隋代","唐代","五代","宋代","金朝","遼代","元代","明代","清代","近代","現代","未知"];
+    const dynastyOrder = ["古文觀止","先秦","秦代","漢代","兩漢","魏晉","南北朝","隋代","唐代","五代","宋代","金朝","遼代","元代","明代","清代","近代","現代","未知"];
     const fileUrls = [
-    "guwenguanzhi_converted.json", // <--- 加上這行
-    "guwen0-1000.json", "guwen1001-2000.json", "guwen2001-3000.json",
-    "guwen3001-4000.json", "guwen4001-5000.json", "guwen5001-6000.json",
-    "guwen6001-7000.json", "guwen7001-8000.json", "guwen8001-9000.json",
-    "guwen9001-10000.json"
-].map(name => `https://raw.githubusercontent.com/kenchan20141/chinese-gushiwen/master/guwen/${name}`);
+        "guwenguanzhi_converted.json", 
+        "guwen0-1000.json", "guwen1001-2000.json", "guwen2001-3000.json",
+        "guwen3001-4000.json", "guwen4001-5000.json", "guwen5001-6000.json",
+        "guwen6001-7000.json", "guwen7001-8000.json", "guwen8001-9000.json",
+        "guwen9001-10000.json"
+    ].map(name => `https://raw.githubusercontent.com/kenchan20141/chinese-gushiwen/master/guwen/${name}`);
 
     const poetryTags = ["詩", "詞", "曲", "五言", "七言", "絕句", "律詩", "樂府", "古詩", "楚辭", "唐詩", "宋詞", "元曲", "辭賦", "詩經"];
 
@@ -858,27 +764,25 @@
                     let rawContent = cleanClassicalContent(safeConvert(p.content || "")).replace(/[\s\r\n]/g, '');
                     if (rawContent.length <= 100) continue;
 
-                  let dyn = safeConvert(p.dynasty || "未知");
-if (!db[dyn]) db[dyn] = [];
+                    let dyn = safeConvert(p.dynasty || "未知");
+                    if (!db[dyn]) db[dyn] = [];
 
-// 新增去重邏輯：檢查當前朝代中是否已有相同篇名與作者的文章
-let currentTitle = safeConvert(p.title || "");
-let currentWriter = safeConvert(p.writer || "");
-let isDuplicate = db[dyn].some(existing => {
-    return safeConvert(existing.title || "") === currentTitle && 
-           safeConvert(existing.writer || "") === currentWriter;
-});
+                    let currentTitle = safeConvert(p.title || "");
+                    let currentWriter = safeConvert(p.writer || "");
+                    let isDuplicate = db[dyn].some(existing => {
+                        return safeConvert(existing.title || "") === currentTitle && 
+                               safeConvert(existing.writer || "") === currentWriter;
+                    });
 
-// 只有在不是重複文章的情況下，才將其加入陣列
-if (!isDuplicate) {
-    db[dyn].push(p);
-}
+                    if (!isDuplicate) {
+                        db[dyn].push(p);
+                    }
                 } catch(e) {}
             }
             renderCategories();
             showView('view-categories');
         } catch (err) {
-            document.getElementById('loading-text').innerText = "載入失敗：" + err.message;
+            document.getElementById('view-loading').innerHTML = "<h2>載入失敗：" + err.message + "</h2>";
         }
     }
 
@@ -948,668 +852,80 @@ if (!isDuplicate) {
         }
     }
 
-  /**
- * 文言文專用繁簡轉換深度修正函數 (Classical Chinese Advanced Patch)
- * 專門解決 OpenCC s2t 在古籍中常見的「一簡對多繁」語境誤轉問題
- * @param {string} twText - 經過 OpenCC 基礎轉換後的繁體文字
- * @returns {string} - 經過文言文語境深度校正後的正體字文字
- */
-function correctClassicalChinese(twText) {
-    if (!twText) return "";
+    function correctClassicalChinese(twText) {
+        if (!twText) return "";
+        twText = twText.replace(/(^|[「『（(【《〈“‘，。！？、；：\s>—])餘/g, '$1余');
+        twText = twText.replace(/餘(?=[幼少長老童病宿生嘗聞見觀視覽讀謂思懷悲慨恨歎歎感喜嘉悅願欲將欲行適往登臨游遊坐臥起立之乎者也曰云語告寄留存以為乃亦故獨私小子一人家兄弟友僕客僕])/g, '余');
+        twText = twText.replace(/餘(?=[心意志身生言作篇集文書詩宅舍鄉舟友僕齒年位族])/g, '余');
+        twText = twText.replace(/([予我吾汝爾])餘/g, '$1余');
+        twText = twText.replace(/餘(?=[玠靖讓慶階嘉厥])/g, '余');
+        twText = twText.replace(/餘姚/g, '余姚');
+        twText = twText.replace(/皇[後裏裡]/g, '皇后').replace(/太[後裏裡]/g, '太后').replace(/君[後裏裡]/g, '君后').replace(/王[後裏裡]/g, '王后').replace(/帝[後裏裡]/g, '帝后').replace(/神[後裏裡]/g, '神后').replace(/天[後裏裡]/g, '天后').replace(/母[後裏裡]/g, '母后').replace(/元[後裏裡]/g, '元后').replace(/主[後裏裡]/g, '主后').replace(/后[後裏裡]/g, '后妃').replace(/[後裏裡]土/g, '后土').replace(/[後裏裡]稷/g, '后稷').replace(/[後裏裡]羿/g, '后羿').replace(/夏[後裏裡]/g, '夏后').replace(/夏[後裏裡]氏/g, '夏后氏').replace(/有夏[後裏裡]氏/g, '有夏后氏').replace(/[後裏裡]辟/g, '后辟');
+        twText = twText.replace(/([子詩書易禮春秋論語孟子荀子莊子老子左傳史記漢書傳記銘序題圖贊歌讖表疏箋訓古人賢人前人聖人先哲先師客公翁叟僧道父母友予我吾余人謂稱道聞言曰])雲/g, '$1云');
+        twText = twText.replace(/所雲/g, '所云').replace(/不知所雲/g, '不知所云').replace(/雲何/g, '云何').replace(/雲爾/g, '云爾').replace(/雲然/g, '云然').replace(/雲者/g, '云者').replace(/云雲/g, '云云').replace(/雲雲/g, '云云').replace(/如是雲/g, '如是云').replace(/雲爾/g, '云爾');
+        twText = twText.replace(/([一二三四五六七八九十百千萬億兆幾半數丈尋步])[裏裡]/g, '$1里');
+        twText = twText.replace(/(故|鄉|鄰|閭|市|巷|村|坊|井|封)[裏裡]/g, '$1里');
+        twText = twText.replace(/[裏裡](?=[長正胥人老社中程數路門居堡堡甲])/g, '里');
+        twText = twText.replace(/萬[裏裡]侯/g, '萬里侯').replace(/尺幅千[裏裡]/g, '尺幅千里').replace(/千[裏裡]馬/g, '千里馬').replace(/千[裏裡]迢迢/g, '千里迢迢').replace(/鵬程萬[裏裡]/g, '鵬程萬里').replace(/決勝千[裏裡]/g, '決勝千里');
+        twText = twText.replace(/([白黑黃青赤玄綠紫鬚毛首頭結披怒鶴束短長落剪剃薙削霜龐微華鬈龐斑斷濡])發/g, '$1髮');
+        twText = twText.replace(/發(?=[膚首冠簪絲髻鬢紉妻綹指指帶網網辮尾渣])/g, '髮');
+        twText = twText.replace(/妾發/g, '妾髮').replace(/結發/g, '結髮').replace(/束發/g, '束髮').replace(/被發/g, '被髮').replace(/散發/g, '散髮').replace(/被發文身/g, '被髮文身').replace(/披發/g, '披髮').replace(/華發/g, '華髮').replace(/鶴發/g, '鶴髮').replace(/黃發/g, '黃髮').replace(/垂發/g, '垂髮').replace(/童發/g, '童髮').replace(/削發/g, '削髮').replace(/剃發/g, '剃髮').replace(/千鈞一發/g, '千鈞一髮').replace(/令人發指/g, '令人髮指').replace(/不絕如發/g, '不絕如髮').replace(/間不容發/g, '間不容髮').replace(/發引千鈞/g, '髮引千鈞').replace(/容發/g, '容髮').replace(/毛發/g, '毛髮').replace(/發妻/g, '髮妻').replace(/發指/g, '髮指');
+        twText = twText.replace(/幹戈/g, '干戈').replace(/天幹/g, '天干').replace(/地支天幹/g, '地支天干').replace(/長幹/g, '長干').replace(/江幹/g, '江干').replace(/河幹/g, '河干').replace(/若幹/g, '若干').replace(/何幹/g, '何干').replace(/相幹/g, '相干').replace(/無幹/g, '無干').replace(/不相幹/g, '不相干').replace(/幹連/g, '干連').replace(/幹涉/g, '干涉').replace(/幹預/g, '干預').replace(/幹將/g, '干將').replace(/幹戚/g, '干戚').replace(/幹犯/g, '干犯').replace(/幹祿/g, '干祿').replace(/幹求/g, '干求').replace(/幹進/g, '干進').replace(/幹政/g, '干政').replace(/幹雲/g, '干雲').replace(/幹霄/g, '干霄').replace(/幹城/g, '干城').replace(/幹旄/g, '干旄').replace(/幹羽/g, '干羽').replace(/幹典/g, '干典').replace(/幹名/g, '干名').replace(/幹位/g, '干位').replace(/幹譽/g, '干譽');
+        twText = twText.replace(/(不|無|未|莫|旋|遂|乃|復|生|反|得|去|重)複/g, '$1復');
+        twText = twText.replace(/複(?=[返來去行至得出起命言見得見生合位歸道書仇怨任讎辟甦醒古始興修徹更查尋])/g, '復');
+        twText = twText.replace(/山重水複/g, '山重水復').replace(/無以複加/g, '無以復加').replace(/複沓/g, '復沓').replace(/周而複始/g, '周而復始').replace(/死而複生/g, '死而復生').replace(/往複/g, '往復').replace(/循環往複/g, '循環往復').replace(/錯綜複雜/g, '錯綜複雜').replace(/繁複/g, '繁複');
+        twText = twText.replace(/天翻地[復複]/g, '天翻地覆').replace(/翻天[復複]地/g, '翻天覆地').replace(/顛[復複]/g, '顛覆').replace(/傾[復複]/g, '傾覆').replace(/[復複]滅/g, '覆滅').replace(/[復複]沒/g, '覆沒').replace(/[復複]蓋/g, '覆蓋').replace(/[復複]水難收/g, '覆水難收').replace(/[復複]巢/g, '覆巢').replace(/[復複]轍/g, '覆轍').replace(/[復複]車/g, '覆車').replace(/[復複]蔽/g, '覆蔽').replace(/[復複]按/g, '覆按').replace(/[復複]核/g, '覆核').replace(/[復複]勘/g, '覆勘').replace(/[復複]載/g, '覆載').replace(/[復複]盆/g, '覆盆');
+        twText = twText.replace(/(出|遠|長|東|西|南|北|親|星|急|長|暴|客|孤|行)徵/g, '$1征');
+        twText = twText.replace(/徵(?=[伐戰夫戍客途路騎衣塵帆馬車船旅稅役斂榷韁騖旗鼓陣剿討拓])/g, '征');
+        twText = twText.replace(/風塵徵徵/g, '風塵征征').replace(/徵人/g, '征人').replace(/徵婦/g, '征婦').replace(/徵蓬/g, '征蓬').replace(/徵鴻/g, '征鴻').replace(/徵棹/g, '征棹').replace(/徵軒/g, '征軒').replace(/旁徵博引/g, '旁徵博引');
+        twText = twText.replace(/角[征徵]羽/g, '角徵羽').replace(/變[征徵]/g, '變徵').replace(/[征徵]聲/g, '徵聲').replace(/[征徵]調/g, '徵調');
+        twText = twText.replace(/鹹(?=[及與以而皆所曰謂有知見聽聞受集群寧宜來至悉使為備歡服欣仰悅歌伏賴康同熙清亨亨安平定降慶和集賓歌歌福])/g, '咸');
+        twText = twText.replace(/([老少群眾內外中遠近華夷公卿士庶邦百宗神宇幽明])鹹/g, '$1咸');
+        twText = twText.replace(/少長鹹集/g, '少長咸集').replace(/老少鹹宜/g, '老少咸宜').replace(/鹹陽/g, '咸陽').replace(/鹹池/g, '咸池').replace(/鹹豐/g, '咸豐').replace(/鹹平/g, '咸平').replace(/鹹通/g, '咸通').replace(/鹹寧/g, '咸寧').replace(/鹹亨/g, '咸亨').replace(/鹹熙/g, '咸熙').replace(/鹹歌/g, '咸歌');
+        twText = twText.replace(/隻(?=[是有要能得管顧好怕因見憑取在自緣須道消成合向此個箇許辦及])/g, '只');
+        twText = twText.replace(/(但|不|何|莫|豈|便|卻|恰|獨|方|寧|空|總|料|漫)隻/g, '$1只');
+        twText = twText.replace(/隻手遮天/g, '隻手遮天').replace(/隻身/g, '隻身').replace(/隻字/g, '隻字').replace(/隻影/g, '隻影').replace(/片紙隻字/g, '片紙隻字').replace(/隻輪不反/g, '隻輪不反').replace(/隻言片語/g, '隻言片語');
+        twText = twText.replace(/([北南泰星星漏刁升五三二一數十石量運滿乘合])鬥/g, '$1斗');
+        twText = twText.replace(/鬥(?=[室膽笠酒柄宿杓杓斛折柄米量筲藪秤魁柄車樽杓星衡柄極拱])/g, '斗');
+        twText = twText.replace(/車載鬥量/g, '車載斗量').replace(/鬥轉星移/g, '斗轉星移').replace(/氣沖鬥牛/g, '氣沖斗牛').replace(/才高八鬥/g, '才高八斗').replace(/滿天星鬥/g, '滿天星斗').replace(/移星換鬥/g, '移星換斗').replace(/斗膽/g, '斗膽').replace(/斗酒/g, '斗酒').replace(/斗米/g, '斗米').replace(/斗笠/g, '斗笠').replace(/斗折蛇行/g, '斗折蛇行');
+        twText = twText.replace(/格[斗鬥]/g, '格鬥').replace(/爭[斗鬥]/g, '爭鬥').replace(/戰[斗鬥]/g, '戰鬥').replace(/械[斗鬥]/g, '械鬥').replace(/決[斗鬥]/g, '決鬥').replace(/角[斗鬥]/g, '角鬥').replace(/[斗鬥]智/g, '鬥智').replace(/[斗鬥]勇/g, '鬥勇').replace(/[斗鬥]狠/g, '鬥狠').replace(/[斗鬥]志/g, '鬥志').replace(/[斗鬥]毆/g, '鬥毆').replace(/龍爭虎[斗鬥]/g, '龍爭虎鬥');
+        twText = twText.replace(/前[僕僕]後繼/g, '前仆後繼').replace(/前[僕僕]後仰/g, '前仆後仰').replace(/僵[僕僕]/g, '僵仆').replace(/偃[僕僕]/g, '偃仆').replace(/[僕僕]地/g, '仆地').replace(/[僕僕]倒/g, '仆倒').replace(/[僕僕]斃/g, '仆斃').replace(/顛[僕僕]/g, '顛仆').replace(/[僕僕]旗/g, '仆旗').replace(/[僕僕]僵/g, '仆僵').replace(/疾[僕僕]/g, '疾仆');
+        twText = twText.replace(/隱[幾幾]/g, '隱几').replace(/憑[幾幾]/g, '憑几').replace(/伏[幾幾]/g, '伏几').replace(/案[幾幾]/g, '案几').replace(/[幾幾]案/g, '几案').replace(/茶[幾幾]/g, '茶几').replace(/榻[幾幾]/g, '榻几').replace(/倚[幾幾]/g, '倚几').replace(/坐[幾幾]/g, '坐几').replace(/[幾幾]席/g, '几席').replace(/[幾幾]筵/g, '几筵').replace(/[幾幾]杖/g, '几杖').replace(/雪[幾幾]/g, '雪几').replace(/淨[幾幾]明窗/g, '淨几明窗').replace(/窗明[幾幾]淨/g, '窗明几淨');
+        twText = twText.replace(/退避三[捨舍]/g, '退避三舍').replace(/廬[捨舍]/g, '廬舍').replace(/館[捨舍]/g, '館舍').replace(/客[捨舍]/g, '客舍').replace(/旅[捨舍]/g, '旅舍').replace(/精[捨舍]/g, '精舍').replace(/房[捨舍]/g, '房舍').replace(/宅[捨舍]/g, '宅舍').replace(/田[捨舍]/g, '田舍').replace(/田[捨舍]翁/g, '田舍翁').replace(/校[捨舍]/g, '校舍').replace(/宿[捨舍]/g, '宿舍').replace(/次[捨舍]/g, '次舍').replace(/[捨舍]弟/g, '舍弟').replace(/[捨舍]妹/g, '舍妹').replace(/[捨舍]親/g, '舍親').replace(/[捨舍]下/g, '舍下').replace(/[捨舍]人/g, '舍人').replace(/左[捨舍]人/g, '左舍人').replace(/中書[捨舍]人/g, '中書舍人');
+        twText = twText.replace(/[舍捨]生取義/g, '捨生取義').replace(/[舍捨]己為人/g, '捨己為人').replace(/[舍捨]近求遠/g, '捨近求遠').replace(/[舍捨]本逐末/g, '捨本逐末').replace(/施[舍捨]/g, '施捨').replace(/割[舍捨]/g, '割捨').replace(/難分難[舍捨]/g, '難分難捨').replace(/依依不[舍捨]/g, '依依不捨');
+        twText = twText.replace(/憑[借藉]/g, '憑藉').replace(/依[借藉]/g, '依藉').replace(/枕[借藉]/g, '枕藉').replace(/狼[借藉]/g, '狼藉').replace(/杯盤狼[借藉]/g, '杯盤狼藉').replace(/慰[借藉]/g, '慰藉').replace(/[借藉]助/g, '藉助').replace(/[借藉]端/g, '藉端').replace(/[借藉]由/g, '藉由').replace(/[借藉]口/g, '藉口').replace(/[借藉]故/g, '藉故').replace(/[借藉]此/g, '藉此').replace(/[借藉]甚/g, '藉甚').replace(/蘊[借藉]/g, '蘊藉').replace(/顧[借藉]/g, '顧藉').replace(/資[借藉]/g, '資藉');
+        twText = twText.replace(/[遊游]魚/g, '游魚').replace(/上[遊游]/g, '上游').replace(/下[遊游]/g, '下游').replace(/中[遊游]/g, '中游').replace(/溯流而[遊游]/g, '溯流而游').replace(/浮[遊游]/g, '浮游').replace(/魚[遊游]/g, '魚游').replace(/[遊游]泳/g, '游泳').replace(/[遊游]水/g, '游水').replace(/[遊游]擊/g, '游擊').replace(/[遊游]弋/g, '游弋').replace(/[遊游]刃有餘/g, '游刃有餘').replace(/力爭上[遊游]/g, '力爭上游');
+        twText = twText.replace(/[游遊]子/g, '遊子').replace(/[游遊]歷/g, '遊歷').replace(/[游遊]玩/g, '遊玩').replace(/[游遊]賞/g, '遊賞').replace(/[游遊]覽/g, '遊覽').replace(/[游遊]記/g, '遊記').replace(/[游遊]俠/g, '遊俠').replace(/[游遊]蕩/g, '遊蕩').replace(/[游遊]客/g, '遊客').replace(/交[游遊]/g, '交遊').replace(/遨[游遊]/g, '遨遊').replace(/漫[游遊]/g, '漫遊').replace(/巡[游遊]/g, '巡遊').replace(/雲[游遊]/g, '雲遊').replace(/出[游遊]/g, '出遊').replace(/遠[游遊]/g, '遠遊').replace(/登[游遊]/g, '登遊');
+        twText = twText.replace(/[御禦]敵/g, '禦敵').replace(/防[御禦]/g, '防禦').replace(/抵[御禦]/g, '抵禦').replace(/[御禦]寒/g, '禦寒').replace(/[御禦]侮/g, '禦侮').replace(/[御禦]寇/g, '禦寇').replace(/[御禦]凶/g, '禦凶').replace(/扞[御禦]/g, '扞禦').replace(/捍[御禦]/g, '捍禦').replace(/後[御禦]/g, '後禦').replace(/拒[御禦]/g, '拒禦');
+        twText = twText.replace(/統[禦御]/g, '統御').replace(/駕[禦御]/g, '駕御').replace(/臨[禦御]/g, '臨御').replace(/[禦御]駕/g, '御駕').replace(/[禦御]史/g, '御史').replace(/[禦御]用/g, '御用').replace(/[禦御]賜/g, '御賜').replace(/[禦御]筆/g, '御筆').replace(/[禦御]前/g, '御前').replace(/[禦御]風/g, '御風').replace(/[禦御]覽/g, '御覽');
+        twText = twText.replace(/歷法/g, '曆法').replace(/日歷/g, '日曆').replace(/曆史/g, '歷史').replace(/曆代/g, '歷代').replace(/皇歷/g, '皇曆').replace(/農歷/g, '農曆').replace(/陰歷/g, '陰曆').replace(/陽歷/g, '陽曆').replace(/太初歷/g, '太初曆').replace(/大統歷/g, '大統曆').replace(/授時歷/g, '授時曆').replace(/歷象/g, '曆象').replace(/歷數/g, '曆數').replace(/歷算/g, '曆算').replace(/曆曆在目/g, '歷歷在目').replace(/遊曆/g, '遊歷').replace(/閱曆/g, '閱歷');
+        twText = twText.replace(/鐘情/g, '鍾情').replace(/一見鐘情/g, '一見鍾情').replace(/鐘愛/g, '鍾愛').replace(/鐘靈毓秀/g, '鍾靈毓秀').replace(/萬鐘/g, '萬鍾').replace(/萬鐘則不辯禮義/g, '萬鍾則不辯禮義').replace(/千鐘粟/g, '千鍾粟').replace(/千鐘/g, '千鍾').replace(/一鐘/g, '一鍾').replace(/鐘毓/g, '鍾毓').replace(/鐘嶸/g, '鍾嶸').replace(/鐘繇/g, '鍾繇').replace(/鐘子期/g, '鍾子期').replace(/錢鐘書/g, '錢鍾書');
+        twText = twText.replace(/黃鍾大呂/g, '黃鐘大呂').replace(/晨鍾暮鼓/g, '晨鐘暮鼓').replace(/鐘鳴鼎食/g, '鐘鳴鼎食').replace(/銅鐘/g, '銅鐘').replace(/敲鐘/g, '敲鐘').replace(/鳴鐘/g, '鳴鐘').replace(/洪鐘/g, '洪鐘').replace(/警鐘/g, '警鐘');
+        twText = twText.replace(/範仲淹/g, '范仲淹').replace(/範蠡/g, '范蠡').replace(/範增/g, '范增').replace(/範曄/g, '范曄').replace(/範成大/g, '范成大').replace(/範睢/g, '范睢').replace(/範滂/g, '范滂').replace(/範陽/g, '范陽').replace(/範縣/g, '范縣').replace(/範氏/g, '范氏');
+        twText = twText.replace(/五岳/g, '五嶽').replace(/三山五岳/g, '三山五嶽').replace(/東岳/g, '東嶽').replace(/西岳/g, '西嶽').replace(/南岳/g, '南嶽').replace(/北岳/g, '北嶽').replace(/中岳/g, '中嶽').replace(/岳麓/g, '嶽麓').replace(/華岳/g, '華嶽').replace(/岱岳/g, '岱嶽').replace(/岳宗/g, '嶽宗').replace(/山岳/g, '山嶽').replace(/嵩岳/g, '嵩嶽').replace(/嶽父/g, '岳父').replace(/嶽母/g, '岳母').replace(/嶽丈/g, '岳丈').replace(/嶽飛/g, '岳飛');
+        twText = twText.replace(/薑太公/g, '姜太公').replace(/薑子牙/g, '姜子牙').replace(/薑尚/g, '姜尚').replace(/薑維/g, '姜維').replace(/薑嫄/g, '姜嫄').replace(/薑夔/g, '姜夔').replace(/薑白石/g, '姜白石').replace(/薑氏/g, '姜氏').replace(/生姜/g, '生薑').replace(/乾姜/g, '乾薑');
+        twText = twText.replace(/[採彩]訪/g, '採訪').replace(/風[採彩]/g, '風采').replace(/神[採彩]/g, '神采').replace(/文[採彩]/g, '文采').replace(/辭[採彩]/g, '辭采').replace(/詞[採彩]/g, '詞采').replace(/[採彩]邑/g, '采邑').replace(/[採彩]地/g, '采地').replace(/[採彩]風/g, '采風').replace(/[採彩]薇/g, '采薇').replace(/精[採采]/g, '精彩').replace(/光[採采]/g, '光彩').replace(/豐[採彩]/g, '豐采').replace(/沒精打[採采]/g, '沒精打采');
+        twText = twText.replace(/三國誌/g, '三國志').replace(/誌怪/g, '志怪').replace(/誌士/g, '志士').replace(/誌願/g, '志願').replace(/誌向/g, '志向').replace(/同誌/g, '同志').replace(/地方誌/g, '地方志').replace(/縣誌/g, '縣志').replace(/府誌/g, '府志').replace(/通誌/g, '通志').replace(/風土誌/g, '風土志');
+        twText = twText.replace(/準許/g, '准許').replace(/準奏/g, '准奏').replace(/批準/g, '批准').replace(/恩準/g, '恩准').replace(/奉準/g, '奉准').replace(/準此/g, '准此').replace(/標准/g, '標準').replace(/水准/g, '水準').replace(/准則/g, '準則').replace(/准繩/g, '準繩').replace(/准確/g, '準確');
+        twText = twText.replace(/百摺不撓/g, '百折不撓').replace(/屈摺/g, '屈折').replace(/損兵摺將/g, '損兵折將').replace(/摺腰/g, '折腰').replace(/摺服/g, '折服').replace(/摧摺/g, '摧折').replace(/攀摺/g, '攀折').replace(/折疊/g, '摺疊').replace(/奏折/g, '奏摺').replace(/摺衝/g, '折衝').replace(/摺獄/g, '折獄').replace(/折子/g, '摺子');
+        twText = twText.replace(/佈衣/g, '布衣').replace(/宣佈/g, '宣布').replace(/分佈/g, '分布').replace(/公佈/g, '公布').replace(/排兵佈陣/g, '排兵布陣').replace(/佈施/g, '布施').replace(/佈道/g, '布道').replace(/織佈/g, '織布').replace(/棉佈/g, '棉布').replace(/麻佈/g, '麻布');
+        twText = twText.replace(/一箭雙雕/g, '一箭雙鵰').replace(/射雕/g, '射鵰').replace(/雕鶚/g, '鵰鶚').replace(/雕悍/g, '鵰悍').replace(/木雕/g, '木雕').replace(/浮雕/g, '浮雕').replace(/雕樑畫棟/g, '雕梁畫棟').replace(/雕琢/g, '雕琢');
+        twText = twText.replace(/鬍人/g, '胡人').replace(/鬍服/g, '胡服').replace(/鬍笳/g, '胡笳').replace(/鬍馬/g, '胡馬').replace(/鬍虜/g, '胡虜').replace(/鬍越/g, '胡越').replace(/鬍不歸/g, '胡不歸').replace(/鬍為/g, '胡為').replace(/鬍亂/g, '胡亂').replace(/鬍言/g, '胡言').replace(/胡鬚/g, '鬍鬚').replace(/長胡/g, '長鬍').replace(/蓄胡/g, '蓄鬍');
+        twText = twText.replace(/品嚐/g, '品嘗').replace(/嚐試/g, '嘗試').replace(/未嚐/g, '未嘗').replace(/何嚐/g, '何嘗').replace(/何曾嚐/g, '何曾嘗').replace(/初嚐/g, '初嘗');
+        twText = twText.replace(/弓絃/g, '弓弦').replace(/箭在絃上/g, '箭在弦上').replace(/動人心絃/g, '動人心弦').replace(/斷絃/g, '斷弦').replace(/改絃更張/g, '改弦更張');
+        twText = twText.replace(/字匯/g, '字彙').replace(/詞匯/g, '詞彙').replace(/匯編/g, '彙編').replace(/匯集/g, '彙集').replace(/風雲際匯/g, '風雲際會');
+        twText = twText.replace(/假託/g, '假托').replace(/託物言志/g, '托物言志').replace(/烘雲託月/g, '烘雲托月');
+        twText = twText.replace(/沈括/g, '沈括').replace(/沈從文/g, '沈從文').replace(/沈約/g, '沈約').replace(/沈煉/g, '沈煉');
+        return twText;
+    }
 
-    // ========================================================
-    // 1. 【余 / 餘】 (人稱代詞「我」、姓氏 vs 剩餘、殘餘)
-    // ========================================================
-    // 文言文中句首、標點後、語氣詞後的「餘」99% 為第一人稱代詞「余」
-    twText = twText.replace(/(^|[「『（(【《〈“‘，。！？、；：\s>—])餘/g, '$1余');
-    // 常見代詞動詞搭配：余憶、余嘗、余聞、余觀、余謂、余思、余讀、余嘉、余念、余病、余幼等
-    twText = twText.replace(/餘(?=[幼少長老童病宿生嘗聞見觀視覽讀謂思懷悲慨恨歎歎感喜嘉悅願欲將欲行適往登臨游遊坐臥起立之乎者也曰云語告寄留存以為乃亦故獨私小子一人家兄弟友僕客僕])/g, '余');
-    // 人稱並列與倒裝：我余、予余、余心、余意、余志、余身、余生、余言、余作、余篇、余集、余文、余詩
-    twText = twText.replace(/餘(?=[心意志身生言作篇集文書詩宅舍鄉舟友僕齒年位族])/g, '余');
-    twText = twText.replace(/([予我吾汝爾])餘/g, '$1余');
-    // 特殊人名與地名
-    twText = twText.replace(/餘(?=[玠靖讓慶階嘉厥])/g, '余'); // 余玠、余靖等古人名
-    twText = twText.replace(/餘姚/g, '余姚');
-
-    // ========================================================
-    // 2. 【后 / 後】 (君王、帝后、上古神明 vs 前後、以後)
-    // ========================================================
-    twText = twText.replace(/皇[後裏裡]/g, '皇后')
-                   .replace(/太[後裏裡]/g, '太后')
-                   .replace(/君[後裏裡]/g, '君后')
-                   .replace(/王[後裏裡]/g, '王后')
-                   .replace(/帝[後裏裡]/g, '帝后')
-                   .replace(/神[後裏裡]/g, '神后')
-                   .replace(/天[後裏裡]/g, '天后')
-                   .replace(/母[後裏裡]/g, '母后')
-                   .replace(/元[後裏裡]/g, '元后')
-                   .replace(/主[後裏裡]/g, '主后')
-                   .replace(/后[後裏裡]/g, '后妃')
-                   .replace(/[後裏裡]土/g, '后土')
-                   .replace(/[後裏裡]稷/g, '后稷')
-                   .replace(/[後裏裡]羿/g, '后羿')
-                   .replace(/夏[後裏裡]/g, '夏后')
-                   .replace(/夏[後裏裡]氏/g, '夏后氏')
-                   .replace(/有夏[後裏裡]氏/g, '有夏后氏')
-                   .replace(/[後裏裡]辟/g, '后辟');
-
-    // ========================================================
-    // 3. 【云 / 雲】 (說話、語助詞、句末詞 vs 雲彩、高空)
-    // ========================================================
-    // 說話引用：子云、詩云、書云、易云、記云、古人云、客云、公云、傳云、語云、銘云、序云、題云
-    twText = twText.replace(/([子詩書易禮春秋論語孟子荀子莊子老子左傳史記漢書傳記銘序題圖贊歌讖表疏箋訓古人賢人前人聖人先哲先師客公翁叟僧道父母友予我吾余人謂稱道聞言曰])雲/g, '$1云');
-    // 助詞與固定句型：所云、云何、云爾、云云、如是云、胡云、曷云
-    twText = twText.replace(/所雲/g, '所云')
-                   .replace(/不知所雲/g, '不知所云')
-                   .replace(/雲何/g, '云何')
-                   .replace(/雲爾/g, '云爾')
-                   .replace(/雲然/g, '云然')
-                   .replace(/雲者/g, '云者')
-                   .replace(/云雲/g, '云云')
-                   .replace(/雲雲/g, '云云')
-                   .replace(/如是雲/g, '如是云')
-                   .replace(/雲爾/g, '云爾');
-
-    // ========================================================
-    // 4. 【里 / 裏 / 裡】 (里程、鄉里、街坊 vs 內部、心中)
-    // ========================================================
-    // 數字 + 里（長度單位）：十里、百里、千里、萬里、數里、幾里、半里、一步一里
-    twText = twText.replace(/([一二三四五六七八九十百千萬億兆幾半數丈尋步])[裏裡]/g, '$1里');
-    // 地理聚落與基層組織：故里、鄉里、鄰里、閭里、市里、巷里、村里、坊里、里弄、井里
-    twText = twText.replace(/(故|鄉|鄰|閭|市|巷|村|坊|井|封)[裏裡]/g, '$1里');
-    // 官制、人物、計量：里長、里正、里胥、里人、里老、里社、里程、里數、里路、萬里侯
-    twText = twText.replace(/[裏裡](?=[長正胥人老社中程數路門居堡堡甲])/g, '里');
-    twText = twText.replace(/萬[裏裡]侯/g, '萬里侯')
-                   .replace(/尺幅千[裏裡]/g, '尺幅千里')
-                   .replace(/千[裏裡]馬/g, '千里馬')
-                   .replace(/千[裏裡]迢迢/g, '千里迢迢')
-                   .replace(/鵬程萬[裏裡]/g, '鵬程萬里')
-                   .replace(/決勝千[裏裡]/g, '決勝千里');
-
-    // ========================================================
-    // 5. 【髮 / 發】 (毛髮、首飾 vs 出發、抒發、發射)
-    // ========================================================
-    twText = twText.replace(/([白黑黃青赤玄綠紫鬚毛首頭結披怒鶴束短長落剪剃薙削霜龐微華鬈龐斑斷濡])發/g, '$1髮');
-    twText = twText.replace(/發(?=[膚首冠簪絲髻鬢紉妻綹指指帶網網辮尾渣])/g, '髮');
-    twText = twText.replace(/妾發/g, '妾髮')
-                   .replace(/結發/g, '結髮')
-                   .replace(/束發/g, '束髮')
-                   .replace(/被發/g, '被髮')
-                   .replace(/散發/g, '散髮')
-                   .replace(/被發文身/g, '被髮文身')
-                   .replace(/披發/g, '披髮')
-                   .replace(/華發/g, '華髮')
-                   .replace(/鶴發/g, '鶴髮')
-                   .replace(/黃發/g, '黃髮')
-                   .replace(/垂發/g, '垂髮')
-                   .replace(/童發/g, '童髮')
-                   .replace(/削發/g, '削髮')
-                   .replace(/剃發/g, '剃髮')
-                   .replace(/千鈞一發/g, '千鈞一髮')
-                   .replace(/令人發指/g, '令人髮指')
-                   .replace(/不絕如發/g, '不絕如髮')
-                   .replace(/間不容發/g, '間不容髮')
-                   .replace(/發引千鈞/g, '髮引千鈞')
-                   .replace(/容發/g, '容髮')
-                   .replace(/毛發/g, '毛髮')
-                   .replace(/發妻/g, '髮妻')
-                   .replace(/發指/g, '髮指');
-
-    // ========================================================
-    // 6. 【干 / 乾 / 幹】 (盾牌、天干、干犯、水岸 vs 乾坤、乾燥 vs 才能、樹幹)
-    // ========================================================
-    // 盾牌兵器、地名、干涉、觸犯：干戈、干城、江干、長干、干犯、干祿、天干、若干
-    twText = twText.replace(/幹戈/g, '干戈')
-                   .replace(/天幹/g, '天干')
-                   .replace(/地支天幹/g, '地支天干')
-                   .replace(/長幹/g, '長干')
-                   .replace(/江幹/g, '江干')
-                   .replace(/河幹/g, '河干')
-                   .replace(/若幹/g, '若干')
-                   .replace(/何幹/g, '何干')
-                   .replace(/相幹/g, '相干')
-                   .replace(/無幹/g, '無干')
-                   .replace(/不相幹/g, '不相干')
-                   .replace(/幹連/g, '干連')
-                   .replace(/幹涉/g, '干涉')
-                   .replace(/幹預/g, '干預')
-                   .replace(/幹將/g, '干將')
-                   .replace(/幹戚/g, '干戚')
-                   .replace(/幹犯/g, '干犯')
-                   .replace(/幹祿/g, '干祿')
-                   .replace(/幹求/g, '干求')
-                   .replace(/幹進/g, '干進')
-                   .replace(/幹政/g, '干政')
-                   .replace(/幹雲/g, '干雲')
-                   .replace(/幹霄/g, '干霄')
-                   .replace(/幹城/g, '干城')
-                   .replace(/幹旄/g, '干旄')
-                   .replace(/幹羽/g, '干羽')
-                   .replace(/幹典/g, '干典')
-                   .replace(/幹名/g, '干名')
-                   .replace(/幹位/g, '干位')
-                   .replace(/幹譽/g, '干譽');
-
-    // ========================================================
-    // 7. 【復 / 複 / 覆】 (返回、恢復、又、再 vs 重複、繁複 vs 覆蓋、傾覆)
-    // ========================================================
-    // 復（文言最常用：再、又、返回、報復、回答）
-    twText = twText.replace(/(不|無|未|莫|旋|遂|乃|復|生|反|得|去|重)複/g, '$1復');
-    twText = twText.replace(/複(?=[返來去行至得出起命言見得見生合位歸道書仇怨任讎辟甦醒古始興修徹更查尋])/g, '復');
-    twText = twText.replace(/山重水複/g, '山重水復')
-                   .replace(/無以複加/g, '無以復加')
-                   .replace(/複沓/g, '復沓')
-                   .replace(/周而複始/g, '周而復始')
-                   .replace(/死而複生/g, '死而復生')
-                   .replace(/往複/g, '往復')
-                   .replace(/循環往複/g, '循環往復')
-                   .replace(/錯綜複雜/g, '錯綜複雜') // 保持 複雜
-                   .replace(/繁複/g, '繁複');     // 保持 繁複
-    // 覆（覆蓋、傾覆、顛覆、審視）
-    twText = twText.replace(/天翻地[復複]/g, '天翻地覆')
-                   .replace(/翻天[復複]地/g, '翻天覆地')
-                   .replace(/顛[復複]/g, '顛覆')
-                   .replace(/傾[復複]/g, '傾覆')
-                   .replace(/[復複]滅/g, '覆滅')
-                   .replace(/[復複]沒/g, '覆沒')
-                   .replace(/[復複]蓋/g, '覆蓋')
-                   .replace(/[復複]水難收/g, '覆水難收')
-                   .replace(/[復複]巢/g, '覆巢')
-                   .replace(/[復複]轍/g, '覆轍')
-                   .replace(/[復複]車/g, '覆車')
-                   .replace(/[復複]蔽/g, '覆蔽')
-                   .replace(/[復複]按/g, '覆按')
-                   .replace(/[復複]核/g, '覆核')
-                   .replace(/[復複]勘/g, '覆勘')
-                   .replace(/[復複]載/g, '覆載')
-                   .replace(/[復複]盆/g, '覆盆');
-
-    // ========================================================
-    // 8. 【征 / 徵】 (遠行、出征、賦稅 vs 徵召、象徵、音律「宮商角徵羽」)
-    // ========================================================
-    // 征（征戰、征途、遠行、取稅）：
-    twText = twText.replace(/(出|遠|長|東|西|南|北|親|星|急|長|暴|客|孤|行)徵/g, '$1征');
-    twText = twText.replace(/徵(?=[伐戰夫戍客途路騎衣塵帆馬車船旅稅役斂榷韁騖旗鼓陣剿討拓])/g, '征');
-    twText = twText.replace(/風塵徵徵/g, '風塵征征')
-                   .replace(/徵人/g, '征人')
-                   .replace(/徵婦/g, '征婦')
-                   .replace(/徵蓬/g, '征蓬')
-                   .replace(/徵鴻/g, '征鴻')
-                   .replace(/徵棹/g, '征棹')
-                   .replace(/徵軒/g, '征軒')
-                   .replace(/旁徵博引/g, '旁徵博引'); // 保持徵引
-    // 徵（宮商角徵羽 音律專用）
-    twText = twText.replace(/角[征徵]羽/g, '角徵羽')
-                   .replace(/變[征徵]/g, '變徵')
-                   .replace(/[征徵]聲/g, '徵聲')
-                   .replace(/[征徵]調/g, '徵調');
-
-    // ========================================================
-    // 9. 【咸 / 鹹】 (全、都、古地名 vs 鹹味、鹽分)
-    // ========================================================
-    // 文言中「咸」字 99% 代表「都、全、皆」
-    twText = twText.replace(/鹹(?=[及與以而皆所曰謂有知見聽聞受集群寧宜來至悉使為備歡服欣仰悅歌伏賴康同熙清亨亨安平定降慶和集賓歌歌福])/g, '咸');
-    twText = twText.replace(/([老少群眾內外中遠近華夷公卿士庶邦百宗神宇幽明])鹹/g, '$1咸');
-    twText = twText.replace(/少長鹹集/g, '少長咸集')
-                   .replace(/老少鹹宜/g, '老少咸宜')
-                   .replace(/鹹陽/g, '咸陽')
-                   .replace(/鹹池/g, '咸池')
-                   .replace(/鹹豐/g, '咸豐')
-                   .replace(/鹹平/g, '咸平')
-                   .replace(/鹹通/g, '咸通')
-                   .replace(/鹹寧/g, '咸寧')
-                   .replace(/鹹亨/g, '咸亨')
-                   .replace(/鹹熙/g, '咸熙')
-                   .replace(/鹹歌/g, '咸歌');
-
-    // ========================================================
-    // 10. 【只 / 隻】 (副詞「僅、只」 vs 量詞、單獨)
-    // ========================================================
-    // 句首副詞、文言常用虛字「只是、只有、只要、只得、只見...」
-    twText = twText.replace(/隻(?=[是有要能得管顧好怕因見憑取在自緣須道消成合向此個箇許辦及])/g, '只');
-    twText = twText.replace(/(但|不|何|莫|豈|便|卻|恰|獨|方|寧|空|總|料|漫)隻/g, '$1只');
-    twText = twText.replace(/隻手遮天/g, '隻手遮天') // 保持隻
-                   .replace(/隻身/g, '隻身')
-                   .replace(/隻字/g, '隻字')
-                   .replace(/隻影/g, '隻影')
-                   .replace(/片紙隻字/g, '片紙隻字')
-                   .replace(/隻輪不反/g, '隻輪不反')
-                   .replace(/隻言片語/g, '隻言片語');
-
-    // ========================================================
-    // 11. 【斗 / 鬥】 (星宿、量器、酒器 vs 爭鬥、戰鬥)
-    // ========================================================
-    // 斗（北斗、斗膽、升斗、斗量、斗大）
-    twText = twText.replace(/([北南泰星星漏刁升五三二一數十石量運滿乘合])鬥/g, '$1斗');
-    twText = twText.replace(/鬥(?=[室膽笠酒柄宿杓杓斛折柄米量筲藪秤魁柄車樽杓星衡柄極拱])/g, '斗');
-    twText = twText.replace(/車載鬥量/g, '車載斗量')
-                   .replace(/鬥轉星移/g, '斗轉星移')
-                   .replace(/氣沖鬥牛/g, '氣沖斗牛')
-                   .replace(/才高八鬥/g, '才高八斗')
-                   .replace(/滿天星鬥/g, '滿天星斗')
-                   .replace(/移星換鬥/g, '移星換斗')
-                   .replace(/斗膽/g, '斗膽')
-                   .replace(/斗酒/g, '斗酒')
-                   .replace(/斗米/g, '斗米')
-                   .replace(/斗笠/g, '斗笠')
-                   .replace(/斗折蛇行/g, '斗折蛇行');
-    // 鬥（戰鬥、爭鬥、角力）
-    twText = twText.replace(/格[斗鬥]/g, '格鬥')
-                   .replace(/爭[斗鬥]/g, '爭鬥')
-                   .replace(/戰[斗鬥]/g, '戰鬥')
-                   .replace(/械[斗鬥]/g, '械鬥')
-                   .replace(/決[斗鬥]/g, '決鬥')
-                   .replace(/角[斗鬥]/g, '角鬥')
-                   .replace(/[斗鬥]智/g, '鬥智')
-                   .replace(/[斗鬥]勇/g, '鬥勇')
-                   .replace(/[斗鬥]狠/g, '鬥狠')
-                   .replace(/[斗鬥]志/g, '鬥志')
-                   .replace(/[斗鬥]毆/g, '鬥毆')
-                   .replace(/龍爭虎[斗鬥]/g, '龍爭虎鬥');
-
-    // ========================================================
-    // 12. 【仆 / 僕】 (向前跌倒、伏地 vs 僕人、奴僕、自稱謙詞)
-    // ========================================================
-    twText = twText.replace(/前[僕僕]後繼/g, '前仆後繼')
-                   .replace(/前[僕僕]後仰/g, '前仆後仰')
-                   .replace(/僵[僕僕]/g, '僵仆')
-                   .replace(/偃[僕僕]/g, '偃仆')
-                   .replace(/[僕僕]地/g, '仆地')
-                   .replace(/[僕僕]倒/g, '仆倒')
-                   .replace(/[僕僕]斃/g, '仆斃')
-                   .replace(/顛[僕僕]/g, '顛仆')
-                   .replace(/[僕僕]旗/g, '仆旗')
-                   .replace(/[僕僕]僵/g, '仆僵')
-                   .replace(/疾[僕僕]/g, '疾仆');
-
-    // ========================================================
-    // 13. 【几 / 幾】 (几案、小桌 vs 幾何、微小「幾希」、幾乎)
-    // ========================================================
-    twText = twText.replace(/隱[幾幾]/g, '隱几')
-                   .replace(/憑[幾幾]/g, '憑几')
-                   .replace(/伏[幾幾]/g, '伏几')
-                   .replace(/案[幾幾]/g, '案几')
-                   .replace(/[幾幾]案/g, '几案')
-                   .replace(/茶[幾幾]/g, '茶几')
-                   .replace(/榻[幾幾]/g, '榻几')
-                   .replace(/倚[幾幾]/g, '倚几')
-                   .replace(/坐[幾幾]/g, '坐几')
-                   .replace(/[幾幾]席/g, '几席')
-                   .replace(/[幾幾]筵/g, '几筵')
-                   .replace(/[幾幾]杖/g, '几杖')
-                   .replace(/雪[幾幾]/g, '雪几')
-                   .replace(/淨[幾幾]明窗/g, '淨几明窗')
-                   .replace(/窗明[幾幾]淨/g, '窗明几淨');
-
-    // ========================================================
-    // 14. 【舍 / 捨】 (房屋、軍事退避、止息 vs 捨棄、施捨)
-    // ========================================================
-    twText = twText.replace(/退避三[捨舍]/g, '退避三舍')
-                   .replace(/廬[捨舍]/g, '廬舍')
-                   .replace(/館[捨舍]/g, '館舍')
-                   .replace(/客[捨舍]/g, '客舍')
-                   .replace(/旅[捨舍]/g, '旅舍')
-                   .replace(/精[捨舍]/g, '精舍')
-                   .replace(/房[捨舍]/g, '房舍')
-                   .replace(/宅[捨舍]/g, '宅舍')
-                   .replace(/田[捨舍]/g, '田舍')
-                   .replace(/田[捨舍]翁/g, '田舍翁')
-                   .replace(/校[捨舍]/g, '校舍')
-                   .replace(/宿[捨舍]/g, '宿舍')
-                   .replace(/次[捨舍]/g, '次舍')
-                   .replace(/[捨舍]弟/g, '舍弟')
-                   .replace(/[捨舍]妹/g, '舍妹')
-                   .replace(/[捨舍]親/g, '舍親')
-                   .replace(/[捨舍]下/g, '舍下')
-                   .replace(/[捨舍]人/g, '舍人')
-                   .replace(/左[捨舍]人/g, '左舍人')
-                   .replace(/中書[捨舍]人/g, '中書舍人');
-    // 捨（捨棄、捨己）
-    twText = twText.replace(/[舍捨]生取義/g, '捨生取義')
-                   .replace(/[舍捨]己為人/g, '捨己為人')
-                   .replace(/[舍捨]近求遠/g, '捨近求遠')
-                   .replace(/[舍捨]本逐末/g, '捨本逐末')
-                   .replace(/施[舍捨]/g, '施捨')
-                   .replace(/割[舍捨]/g, '割捨')
-                   .replace(/難分難[舍捨]/g, '難分難捨')
-                   .replace(/依依不[舍捨]/g, '依依不捨');
-
-    // ========================================================
-    // 15. 【藉 / 借】 (憑藉、墊草、狼藉、慰藉 vs 借貸、假借)
-    // ========================================================
-    twText = twText.replace(/憑[借藉]/g, '憑藉')
-                   .replace(/依[借藉]/g, '依藉')
-                   .replace(/枕[借藉]/g, '枕藉')
-                   .replace(/狼[借藉]/g, '狼藉')
-                   .replace(/杯盤狼[借藉]/g, '杯盤狼藉')
-                   .replace(/慰[借藉]/g, '慰藉')
-                   .replace(/[借藉]助/g, '藉助')
-                   .replace(/[借藉]端/g, '藉端')
-                   .replace(/[借藉]由/g, '藉由')
-                   .replace(/[借藉]口/g, '藉口')
-                   .replace(/[借藉]故/g, '藉故')
-                   .replace(/[借藉]此/g, '藉此')
-                   .replace(/[借藉]甚/g, '藉甚')
-                   .replace(/蘊[借藉]/g, '蘊藉')
-                   .replace(/顧[借藉]/g, '顧藉')
-                   .replace(/資[借藉]/g, '資藉');
-
-    // ========================================================
-    // 16. 【游 / 遊】 (水流、游泳、游魚 vs 遊歷、交遊、遊玩)
-    // ========================================================
-    // 水中與河流固定用「游」
-    twText = twText.replace(/[遊游]魚/g, '游魚')
-                   .replace(/上[遊游]/g, '上游')
-                   .replace(/下[遊游]/g, '下游')
-                   .replace(/中[遊游]/g, '中游')
-                   .replace(/溯流而[遊游]/g, '溯流而游')
-                   .replace(/浮[遊游]/g, '浮游')
-                   .replace(/魚[遊游]/g, '魚游')
-                   .replace(/[遊游]泳/g, '游泳')
-                   .replace(/[遊游]水/g, '游水')
-                   .replace(/[遊游]擊/g, '游擊')
-                   .replace(/[遊游]弋/g, '游弋')
-                   .replace(/[遊游]刃有餘/g, '游刃有餘')
-                   .replace(/力爭上[遊游]/g, '力爭上游');
-    // 遊歷與交往固定用「遊」
-    twText = twText.replace(/[游遊]子/g, '遊子')
-                   .replace(/[游遊]歷/g, '遊歷')
-                   .replace(/[游遊]玩/g, '遊玩')
-                   .replace(/[游遊]賞/g, '遊賞')
-                   .replace(/[游遊]覽/g, '遊覽')
-                   .replace(/[游遊]記/g, '遊記')
-                   .replace(/[游遊]俠/g, '遊俠')
-                   .replace(/[游遊]蕩/g, '遊蕩')
-                   .replace(/[游遊]客/g, '遊客')
-                   .replace(/交[游遊]/g, '交遊')
-                   .replace(/遨[游遊]/g, '遨遊')
-                   .replace(/漫[游遊]/g, '漫遊')
-                   .replace(/巡[游遊]/g, '巡遊')
-                   .replace(/雲[游遊]/g, '雲遊')
-                   .replace(/出[游遊]/g, '出遊')
-                   .replace(/遠[游遊]/g, '遠遊')
-                   .replace(/登[游遊]/g, '登遊');
-
-    // ========================================================
-    // 17. 【禦 / 御】 (抵禦、防禦 vs 駕馭、統御、皇帝御用)
-    // ========================================================
-    twText = twText.replace(/[御禦]敵/g, '禦敵')
-                   .replace(/防[御禦]/g, '防禦')
-                   .replace(/抵[御禦]/g, '抵禦')
-                   .replace(/[御禦]寒/g, '禦寒')
-                   .replace(/[御禦]侮/g, '禦侮')
-                   .replace(/[御禦]寇/g, '禦寇')
-                   .replace(/[御禦]凶/g, '禦凶')
-                   .replace(/扞[御禦]/g, '扞禦')
-                   .replace(/捍[御禦]/g, '捍禦')
-                   .replace(/後[御禦]/g, '後禦')
-                   .replace(/拒[御禦]/g, '拒禦');
-    // 御（駕馭、帝王）
-    twText = twText.replace(/統[禦御]/g, '統御')
-                   .replace(/駕[禦御]/g, '駕御')
-                   .replace(/臨[禦御]/g, '臨御')
-                   .replace(/[禦御]駕/g, '御駕')
-                   .replace(/[禦御]史/g, '御史')
-                   .replace(/[禦御]用/g, '御用')
-                   .replace(/[禦御]賜/g, '御賜')
-                   .replace(/[禦御]筆/g, '御筆')
-                   .replace(/[禦御]前/g, '御前')
-                   .replace(/[禦御]風/g, '御風')
-                   .replace(/[禦御]覽/g, '御覽');
-
-    // ========================================================
-    // 18. 【歷 / 曆】 (經歷、歷史、歷代 vs 日曆、曆法、天象算度)
-    // ========================================================
-    twText = twText.replace(/歷法/g, '曆法')
-                   .replace(/日歷/g, '日曆')
-                   .replace(/曆史/g, '歷史') // 保持 歷史
-                   .replace(/曆代/g, '歷代')
-                   .replace(/皇歷/g, '皇曆')
-                   .replace(/農歷/g, '農曆')
-                   .replace(/陰歷/g, '陰曆')
-                   .replace(/陽歷/g, '陽曆')
-                   .replace(/太初歷/g, '太初曆')
-                   .replace(/大統歷/g, '大統曆')
-                   .replace(/授時歷/g, '授時曆')
-                   .replace(/歷象/g, '曆象')
-                   .replace(/歷數/g, '曆數')
-                   .replace(/歷算/g, '曆算')
-                   .replace(/曆曆在目/g, '歷歷在目')
-                   .replace(/遊曆/g, '遊歷')
-                   .replace(/閱曆/g, '閱歷');
-
-    // ========================================================
-    // 19. 【鐘 / 鍾】 (樂器、鐘鼓、計時 vs 鍾情、器皿「萬鍾」、人名)
-    // ========================================================
-    // 鍾（感情、器皿、量詞、姓氏）
-    twText = twText.replace(/鐘情/g, '鍾情')
-                   .replace(/一見鐘情/g, '一見鍾情')
-                   .replace(/鐘愛/g, '鍾愛')
-                   .replace(/鐘靈毓秀/g, '鍾靈毓秀')
-                   .replace(/萬鐘/g, '萬鍾')
-                   .replace(/萬鐘則不辯禮義/g, '萬鍾則不辯禮義')
-                   .replace(/千鐘粟/g, '千鍾粟')
-                   .replace(/千鐘/g, '千鍾')
-                   .replace(/一鐘/g, '一鍾')
-                   .replace(/鐘毓/g, '鍾毓')
-                   .replace(/鐘嶸/g, '鍾嶸')
-                   .replace(/鐘繇/g, '鍾繇')
-                   .replace(/鐘子期/g, '鍾子期')
-                   .replace(/錢鐘書/g, '錢鍾書');
-    // 鐘（樂器、鐘鼎）
-    twText = twText.replace(/黃鍾大呂/g, '黃鐘大呂')
-                   .replace(/晨鍾暮鼓/g, '晨鐘暮鼓')
-                   .replace(/鐘鳴鼎食/g, '鐘鳴鼎食')
-                   .replace(/銅鐘/g, '銅鐘')
-                   .replace(/敲鐘/g, '敲鐘')
-                   .replace(/鳴鐘/g, '鳴鐘')
-                   .replace(/洪鐘/g, '洪鐘')
-                   .replace(/警鐘/g, '警鐘');
-
-    // ========================================================
-    // 20. 【範 / 范】 (模範、規範、範圍 vs 姓氏、古國古地名)
-    // ========================================================
-    twText = twText.replace(/範仲淹/g, '范仲淹')
-                   .replace(/範蠡/g, '范蠡')
-                   .replace(/範增/g, '范增')
-                   .replace(/範曄/g, '范曄')
-                   .replace(/範成大/g, '范成大')
-                   .replace(/範睢/g, '范睢')
-                   .replace(/範滂/g, '范滂')
-                   .replace(/範陽/g, '范陽')
-                   .replace(/範縣/g, '范縣')
-                   .replace(/範氏/g, '范氏');
-
-    // ========================================================
-    // 21. 【嶽 / 岳】 (高山、五嶽 vs 岳父、姓氏)
-    // ========================================================
-    twText = twText.replace(/五岳/g, '五嶽')
-                   .replace(/三山五岳/g, '三山五嶽')
-                   .replace(/東岳/g, '東嶽')
-                   .replace(/西岳/g, '西嶽')
-                   .replace(/南岳/g, '南嶽')
-                   .replace(/北岳/g, '北嶽')
-                   .replace(/中岳/g, '中嶽')
-                   .replace(/岳麓/g, '嶽麓')
-                   .replace(/華岳/g, '華嶽')
-                   .replace(/岱岳/g, '岱嶽')
-                   .replace(/岳宗/g, '嶽宗')
-                   .replace(/山岳/g, '山嶽')
-                   .replace(/嵩岳/g, '嵩嶽')
-                   .replace(/嶽父/g, '岳父')
-                   .replace(/嶽母/g, '岳母')
-                   .replace(/嶽丈/g, '岳丈')
-                   .replace(/嶽飛/g, '岳飛');
-
-    // ========================================================
-    // 22. 【薑 / 姜】 (植物生薑 vs 姓氏齊國姜姓、姜太公)
-    // ========================================================
-    twText = twText.replace(/薑太公/g, '姜太公')
-                   .replace(/薑子牙/g, '姜子牙')
-                   .replace(/薑尚/g, '姜尚')
-                   .replace(/薑維/g, '姜維')
-                   .replace(/薑嫄/g, '姜嫄')
-                   .replace(/薑夔/g, '姜夔')
-                   .replace(/薑白石/g, '姜白石')
-                   .replace(/薑氏/g, '姜氏')
-                   .replace(/生姜/g, '生薑')
-                   .replace(/乾姜/g, '乾薑');
-
-    // ========================================================
-    // 23. 【采 / 採 / 彩】 (風采、文采、神采、采邑 vs 採摘、採集 vs 色彩)
-    // ========================================================
-    twText = twText.replace(/[採彩]訪/g, '採訪')
-                   .replace(/風[採彩]/g, '風采')
-                   .replace(/神[採彩]/g, '神采')
-                   .replace(/文[採彩]/g, '文采')
-                   .replace(/辭[採彩]/g, '辭采')
-                   .replace(/詞[採彩]/g, '詞采')
-                   .replace(/[採彩]邑/g, '采邑')
-                   .replace(/[採彩]地/g, '采地')
-                   .replace(/[採彩]風/g, '采風')
-                   .replace(/[採彩]薇/g, '采薇')
-                   .replace(/精[採采]/g, '精彩')
-                   .replace(/光[採采]/g, '光彩')
-                   .replace(/豐[採彩]/g, '豐采')
-                   .replace(/沒精打[採采]/g, '沒精打采');
-
-    // ========================================================
-    // 24. 【志 / 誌】 (意志、志向、人物誌 vs 標誌、墓誌、方誌)
-    // ========================================================
-    twText = twText.replace(/三國誌/g, '三國志')
-                   .replace(/誌怪/g, '志怪')
-                   .replace(/誌士/g, '志士')
-                   .replace(/誌願/g, '志願')
-                   .replace(/誌向/g, '志向')
-                   .replace(/同誌/g, '同志')
-                   .replace(/地方誌/g, '地方志')
-                   .replace(/縣誌/g, '縣志')
-                   .replace(/府誌/g, '府志')
-                   .replace(/通誌/g, '通志')
-                   .replace(/風土誌/g, '風土志')
-                   .replace(/墓誌銘/g, '墓誌銘'); // 保持 墓誌銘
-
-    // ========================================================
-    // 25. 【准 / 準】 (批准、准許 vs 標準、準確、水準)
-    // ========================================================
-    twText = twText.replace(/準許/g, '准許')
-                   .replace(/準奏/g, '准奏')
-                   .replace(/批準/g, '批准')
-                   .replace(/恩準/g, '恩准')
-                   .replace(/奉準/g, '奉准')
-                   .replace(/準此/g, '准此')
-                   .replace(/標准/g, '標準')
-                   .replace(/水准/g, '水準')
-                   .replace(/准則/g, '準則')
-                   .replace(/准繩/g, '準繩')
-                   .replace(/准確/g, '準確');
-
-    // ========================================================
-    // 26. 【折 / 摺】 (折斷、折腰、挫折 vs 摺疊、奏摺)
-    // ========================================================
-    twText = twText.replace(/百摺不撓/g, '百折不撓')
-                   .replace(/屈摺/g, '屈折')
-                   .replace(/損兵摺將/g, '損兵折將')
-                   .replace(/摺腰/g, '折腰')
-                   .replace(/摺服/g, '折服')
-                   .replace(/摧摺/g, '摧折')
-                   .replace(/攀摺/g, '攀折')
-                   .replace(/折疊/g, '摺疊')
-                   .replace(/奏折/g, '奏摺')
-                   .replace(/摺衝/g, '折衝')
-                   .replace(/摺獄/g, '折獄')
-                   .replace(/折子/g, '摺子');
-
-    // ========================================================
-    // 27. 【布 / 佈】 (布帛、布衣、宣布、分布)
-    // ========================================================
-    twText = twText.replace(/佈衣/g, '布衣')
-                   .replace(/宣佈/g, '宣布')
-                   .replace(/分佈/g, '分布')
-                   .replace(/公佈/g, '公布')
-                   .replace(/排兵佈陣/g, '排兵布陣')
-                   .replace(/佈施/g, '布施')
-                   .replace(/佈道/g, '布道')
-                   .replace(/織佈/g, '織布')
-                   .replace(/棉佈/g, '棉布')
-                   .replace(/麻佈/g, '麻布');
-
-    // ========================================================
-    // 28. 【雕 / 鵰 / 彫】 (雕刻、雕琢 vs 猛禽射鵰 vs 凋零古字)
-    // ========================================================
-    twText = twText.replace(/一箭雙雕/g, '一箭雙鵰')
-                   .replace(/射雕/g, '射鵰')
-                   .replace(/雕鶚/g, '鵰鶚')
-                   .replace(/雕悍/g, '鵰悍')
-                   .replace(/木雕/g, '木雕')
-                   .replace(/浮雕/g, '浮雕')
-                   .replace(/雕樑畫棟/g, '雕梁畫棟')
-                   .replace(/雕琢/g, '雕琢');
-
-    // ========================================================
-    // 29. 【胡 / 鬍】 (北方胡人、胡亂、何/為何 vs 鬍鬚)
-    // ========================================================
-    twText = twText.replace(/鬍人/g, '胡人')
-                   .replace(/鬍服/g, '胡服')
-                   .replace(/鬍笳/g, '胡笳')
-                   .replace(/鬍馬/g, '胡馬')
-                   .replace(/鬍虜/g, '胡虜')
-                   .replace(/鬍越/g, '胡越')
-                   .replace(/鬍不歸/g, '胡不歸')
-                   .replace(/鬍為/g, '胡為')
-                   .replace(/鬍亂/g, '胡亂')
-                   .replace(/鬍言/g, '胡言')
-                   .replace(/胡鬚/g, '鬍鬚')
-                   .replace(/長胡/g, '長鬍')
-                   .replace(/蓄胡/g, '蓄鬍');
-
-    // ========================================================
-    // 30. 【其他常見文言文單字與成語校正】
-    // ========================================================
-    // 嘗（嘗試、未嘗、品嘗）
-    twText = twText.replace(/品嚐/g, '品嘗')
-                   .replace(/嚐試/g, '嘗試')
-                   .replace(/未嚐/g, '未嘗')
-                   .replace(/何嚐/g, '何嘗')
-                   .replace(/何曾嚐/g, '何曾嘗')
-                   .replace(/初嚐/g, '初嘗');
-                   
-    // 弦（弓弦、琴弦、弦月）
-    twText = twText.replace(/弓絃/g, '弓弦')
-                   .replace(/箭在絃上/g, '箭在弦上')
-                   .replace(/動人心絃/g, '動人心弦')
-                   .replace(/斷絃/g, '斷弦')
-                   .replace(/改絃更張/g, '改弦更張');
-
-    // 彙（詞彙、彙編 vs 匯款）
-    twText = twText.replace(/字匯/g, '字彙')
-                   .replace(/詞匯/g, '詞彙')
-                   .replace(/匯編/g, '彙編')
-                   .replace(/匯集/g, '彙集')
-                   .replace(/風雲際匯/g, '風雲際會');
-
-    // 托（托付、假托 vs 託名、寄託）
-    twText = twText.replace(/假託/g, '假托')
-                   .replace(/託物言志/g, '托物言志')
-                   .replace(/烘雲託月/g, '烘雲托月');
-
-    // 覆核與常見名詞
-    twText = twText.replace(/沈括/g, '沈括')
-                   .replace(/沈從文/g, '沈從文')
-                   .replace(/沈約/g, '沈約')
-                   .replace(/沈煉/g, '沈煉');
-
-    return twText;
-}
     function safeConvert(val) {
         if (!val) return "";
         if (Array.isArray(val)) val = val.join("\n");
         if (typeof val === 'object') val = JSON.stringify(val);
         let twText = converter(String(val));
-        
         twText = twText.replace(/“/g, '「').replace(/”/g, '」').replace(/‘/g, '『').replace(/’/g, '』');
         twText = correctClassicalChinese(twText);
-
         return twText;
     }
 
@@ -1617,7 +933,6 @@ function correctClassicalChinese(twText) {
         return removeBrackets(text);
     }
 
-    // 修復第一段不縮排問題：強制清除 HTML 產生的隱形空格與全形空格
     function wrapParagraphs(text) {
         if (!text) return '';
         text = text.replace(/&nbsp;/g, '').replace(/　/g, ''); 
@@ -1625,71 +940,63 @@ function correctClassicalChinese(twText) {
         return lines.map(line => `<p>${line}</p>`).join('');
     }
 
- // 1. 取代原本的 renderCategories
-function renderCategories() {
-    const mainGrid = document.getElementById('main-category-grid');
-    mainGrid.innerHTML = '';
-    mainGrid.className = ''; 
+    function renderCategories() {
+        const mainGrid = document.getElementById('main-category-grid');
+        mainGrid.innerHTML = '';
+        mainGrid.className = ''; 
 
-    function toChineseNum(num) {
-        const chars = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
-        return String(num).split('').map(n => chars[n]).join('');
-    }
-
-    // 生成「古文觀止」卡片
-    if (db["古文觀止"] && db["古文觀止"].length > 0) {
-        // 建立外層大容器 (用來同時包住書和下方印章)
-        const wrapper1 = document.createElement('div');
-        wrapper1.className = 'category-wrapper';
-        wrapper1.onclick = () => {
-            currentOpenedCategory = "古文觀止";
-            openDynasty("古文觀止");
-        };
-
-        let countText = toChineseNum(db["古文觀止"].length);
-        wrapper1.innerHTML = `
-            <div class="classic-book-card theme-blue" data-bg-char="觀">
-                <h3>古文觀止</h3>
-            </div>
-            <div class="book-stamp">${countText}卷</div>
-        `;
-        mainGrid.appendChild(wrapper1);
-    }
-
-    // 計算歷代詩文的總卷數
-    let totalPoetry = 0;
-    const excludedForPoetry = ["古文觀止", "近代", "現代", "未知"];
-    Object.keys(db).forEach(dyn => {
-        if (!excludedForPoetry.includes(dyn)) {
-            totalPoetry += db[dyn].length;
+        function toChineseNum(num) {
+            const chars = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+            return String(num).split('').map(n => chars[n]).join('');
         }
-    });
 
-    // 生成「歷代詩文」卡片
-    if (totalPoetry > 0) {
-        const wrapper2 = document.createElement('div');
-        wrapper2.className = 'category-wrapper';
-        wrapper2.onclick = () => openSubDynasties();
+        if (db["古文觀止"] && db["古文觀止"].length > 0) {
+            const wrapper1 = document.createElement('div');
+            wrapper1.className = 'category-wrapper';
+            wrapper1.onclick = () => {
+                currentOpenedCategory = "古文觀止";
+                openDynasty("古文觀止");
+            };
 
-        let countText = toChineseNum(totalPoetry);
-        wrapper2.innerHTML = `
-            <div class="classic-book-card theme-yellow" data-bg-char="詩">
-                <h3>歷代詩文</h3>
-            </div>
-            <div class="book-stamp">${countText}卷</div>
-        `;
-        mainGrid.appendChild(wrapper2);
+            let countText = toChineseNum(db["古文觀止"].length);
+            wrapper1.innerHTML = `
+                <div class="classic-book-card theme-blue" data-bg-char="觀">
+                    <h3>古文觀止</h3>
+                </div>
+                <div class="book-stamp">${countText}卷</div>
+            `;
+            mainGrid.appendChild(wrapper1);
+        }
+
+        let totalPoetry = 0;
+        const excludedForPoetry = ["古文觀止", "近代", "現代", "未知"];
+        Object.keys(db).forEach(dyn => {
+            if (!excludedForPoetry.includes(dyn)) {
+                totalPoetry += db[dyn].length;
+            }
+        });
+
+        if (totalPoetry > 0) {
+            const wrapper2 = document.createElement('div');
+            wrapper2.className = 'category-wrapper';
+            wrapper2.onclick = () => openSubDynasties();
+
+            let countText = toChineseNum(totalPoetry);
+            wrapper2.innerHTML = `
+                <div class="classic-book-card theme-yellow" data-bg-char="詩">
+                    <h3>歷代詩文</h3>
+                </div>
+                <div class="book-stamp">${countText}卷</div>
+            `;
+            mainGrid.appendChild(wrapper2);
+        }
     }
-}
 
-  
-    // 2. 新增：渲染第二層「歷代朝代」選單的邏輯
     function openSubDynasties() {
         const grid = document.getElementById('dynasty-grid');
         grid.innerHTML = '';
         const sorted = Object.keys(db).sort((a, b) => (dynastyOrder.indexOf(a) !== -1 ? dynastyOrder.indexOf(a) : 999) - (dynastyOrder.indexOf(b) !== -1 ? dynastyOrder.indexOf(b) : 999));
 
-        // 隱藏名單加上「古文觀止」，避免它出現在歷代詩文裡
         const hiddenDynasties = ["古文觀止", "近代", "現代", "未知"];
 
         for (let dyn of sorted) {
@@ -1699,7 +1006,7 @@ function renderCategories() {
             btn.className = 'card-btn';
             btn.innerHTML = `<h3>${dyn}</h3><p>${db[dyn].length} 卷</p>`;
             btn.onclick = () => {
-                currentOpenedCategory = "歷代詩文"; // 標記是從歷代詩文點進去的
+                currentOpenedCategory = "歷代詩文";
                 openDynasty(dyn);
             };
             grid.appendChild(btn);
@@ -1707,14 +1014,14 @@ function renderCategories() {
         showView('view-sub-dynasties');
     }
 
-    // 3. 新增：處理文章列表頁的「返回邏輯」
     function goBackFromList() {
         if (currentOpenedCategory === "歷代詩文") {
-            showView('view-sub-dynasties'); // 如果是從歷代詩文進來的，退回歷代詩文
+            showView('view-sub-dynasties'); 
         } else {
-            showView('view-categories');    // 否則（古文觀止、我的最愛）退回主選單
+            showView('view-categories');    
         }
     }
+
     function generateDifficultyAndSort(poemsArray) {
         poemsArray.forEach(p => {
             p._rawLength = cleanClassicalContent(safeConvert(p.content || "")).length;
@@ -1816,8 +1123,8 @@ function renderCategories() {
         showView('view-list');
     }
 
-function openFavorites() {
-        currentOpenedCategory = "我的最愛"; // 加入這行
+    function openFavorites() {
+        currentOpenedCategory = "我的最愛";
         
         if (favorites.length === 0) {
             alert("您尚未加入任何最愛篇章。");
@@ -1899,10 +1206,191 @@ function openFavorites() {
 
     function filterList() { renderPoemList(); }
 
+    /* ========================================================
+       ✨ 新增：注釋解析與高亮替換演算法 (防重疊、防破壞 HTML)
+       ======================================================== */
+
+    // 1. 從原字串提取所有 {vocab, exp} 物件
+    function extractVocabs(text) {
+        let lines = text.split(/\r?\n/);
+        let vocabs = [];
+        lines.forEach(line => {
+            if (!line.trim()) return;
+            
+            let pureLine = line.trim().replace(/^([\[\(【（]?\d+[\]\)】）]?|[①-⑳])\s*[.:：]?\s*/, '');
+            if (!pureLine) return;
+
+            let vocab = '-';
+            let exp = pureLine;
+
+            let bracketMatch = pureLine.match(/^[【\[]([^】\]]+)[】\]]\s*(.*)$/);
+            if (bracketMatch) {
+                vocab = bracketMatch[1].trim();
+                exp = bracketMatch[2].trim();
+            } else {
+                let splitMatch = pureLine.match(/^([^：:——]{1,15})[：:——]\s*(.*)$/);
+                if (splitMatch) {
+                    vocab = splitMatch[1].trim();
+                    exp = splitMatch[2].trim();
+                }
+            }
+            
+            vocab = removeBrackets(vocab);
+            exp = removeBrackets(exp);
+
+            if(vocab && vocab !== '-') {
+                vocabs.push({vocab, exp});
+            }
+        });
+        return vocabs;
+    }
+
+    // 2. 在正文中搜尋字詞，並標記為高亮。使用 PUA 防替換衝突
+    function highlightVocabsInContent(contentStr, vocabs) {
+        // 以字詞長度降序排列，避免「短詞」干擾「長詞」的高亮
+        let sorted = [...vocabs].sort((a, b) => b.vocab.length - a.vocab.length);
+        
+        let placeholders = [];
+        let processedText = contentStr;
+        
+        sorted.forEach((item, index) => {
+            if (item.vocab.length < 1) return;
+            
+            // 使用 Private Use Area 字符作為佔位符，保證絕不會與古文或英文字母衝突
+            let pKey = String.fromCharCode(0xE000 + index);
+            let safeVocab = item.vocab.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            let regex = new RegExp(safeVocab, 'g');
+            
+            if (regex.test(processedText)) {
+                processedText = processedText.replace(regex, pKey);
+                placeholders.push({
+                    key: pKey,
+                    vocab: item.vocab,
+                    exp: item.exp
+                });
+            }
+        });
+        
+        // 將佔位符轉為帶有 onclick 事件的 HTML 元素
+        placeholders.forEach((p) => {
+            let encVocab = encodeURIComponent(p.vocab);
+            let encExp = encodeURIComponent(p.exp);
+            let span = `<span class="inline-vocab" onclick="showVocabTooltip(event, '${encVocab}', '${encExp}')">${p.vocab}</span>`;
+            processedText = processedText.replace(new RegExp(p.key, 'g'), span);
+        });
+        
+        return processedText;
+    }
+
+    // 3. 生成側邊面板用的注釋表格 (改為吃 List)
+    function parseRemarksToTableFromList(vocabs) {
+        let safeTitle = currentPoem ? safeConvert(currentPoem.title) : '未知';
+        let tableHtml = `<table class="remark-table">
+            <thead>
+                <tr>
+                    <th width="10%">序號</th>
+                    <th width="20%" style="text-align:center;">字/詞/句</th>
+                    <th>解析</th>
+                    <th width="15%" style="text-align:center;">收藏</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        if (vocabs.length === 0) {
+             return tableHtml + `<tr><td colspan="4" class="empty">卷宗殘缺，暫無注釋</td></tr></tbody></table>`;
+        }
+
+        vocabs.forEach((v, idx) => {
+            let vocabHtml = `<span class="vocab-badge">${v.vocab}</span>`;
+            let isSaved = savedVocabs.some(sv => sv.vocab === v.vocab && sv.title === safeTitle);
+            let heartSvg = isSaved 
+                ? `<svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--cinnabar-red)" stroke-width="2" fill="var(--cinnabar-red)"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`
+                : `<svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--ink-gray)" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
+
+            let safeVocabStr = encodeURIComponent(v.vocab);
+            let safeExpStr = encodeURIComponent(v.exp);
+
+            tableHtml += `<tr>
+                <td class="r-idx">${idx + 1}.</td>
+                <td style="text-align:center;">${vocabHtml}</td>
+                <td>${v.exp}</td>
+                <td style="text-align:center; vertical-align:middle;">
+                    <button class="btn-vocab-save" onclick="toggleVocab('${safeVocabStr}', '${safeExpStr}', this)" title="收藏此詞解">
+                        ${heartSvg}
+                    </button>
+                </td>
+            </tr>`;
+        });
+        tableHtml += '</tbody></table>';
+        return tableHtml;
+    }
+
+    // ✨ 彈出 Tooltip 的主程式
+    function showVocabTooltip(e, encVocab, encExp) {
+        e.stopPropagation(); 
+        hideVocabTooltip(); // 先隱藏其他的
+
+        let vocab = decodeURIComponent(encVocab);
+        let exp = decodeURIComponent(encExp);
+        let safeTitle = currentPoem ? safeConvert(currentPoem.title) : '未知';
+        
+        let isSaved = savedVocabs.some(v => v.vocab === vocab && v.title === safeTitle);
+        let heartSvg = isSaved 
+            ? `<svg viewBox="0 0 24 24" width="22" height="22" stroke="var(--cinnabar-red)" stroke-width="2" fill="var(--cinnabar-red)"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`
+            : `<svg viewBox="0 0 24 24" width="22" height="22" stroke="var(--ink-gray)" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
+
+        const tooltip = document.getElementById('vocab-tooltip');
+        
+        tooltip.innerHTML = `
+            <div class="tooltip-header">
+                <span class="tooltip-vocab">${vocab}</span>
+                <button class="btn-vocab-save" onclick="toggleVocab('${encVocab}', '${encExp}', this); event.stopPropagation();" title="收藏此詞解">
+                    ${heartSvg}
+                </button>
+            </div>
+            <div class="tooltip-exp">${exp}</div>
+        `;
+        
+        tooltip.style.display = 'block';
+        
+        const rect = e.target.getBoundingClientRect();
+        let top = window.scrollY + rect.bottom + 10;
+        let left = window.scrollX + rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2);
+        
+        if (left < 10) left = 10;
+        if (left + tooltip.offsetWidth > document.documentElement.clientWidth - 10) {
+            left = document.documentElement.clientWidth - tooltip.offsetWidth - 10;
+        }
+        
+        tooltip.style.top = top + 'px';
+        tooltip.style.left = left + 'px';
+    }
+
+    function hideVocabTooltip() {
+        const tooltip = document.getElementById('vocab-tooltip');
+        if (tooltip) tooltip.style.display = 'none';
+    }
+
+    // 點擊空白處隱藏 Tooltip
+    document.addEventListener('click', (e) => {
+        const tooltip = document.getElementById('vocab-tooltip');
+        if (tooltip && tooltip.style.display === 'block') {
+            if (!tooltip.contains(e.target) && !e.target.classList.contains('inline-vocab')) {
+                hideVocabTooltip();
+            }
+        }
+    });
+
+    // 滾動時隱藏 Tooltip 避免漂移
+    window.addEventListener('scroll', () => { hideVocabTooltip(); }, {passive: true});
+
+    /* ======================================================== */
+
     function openDetail(p) {
         currentPoem = p;
         stopTTS();
         closePanel(); 
+        hideVocabTooltip();
         
         let title = safeConvert(p.title || '無題');
         let writer = safeConvert(p.writer || '佚名');
@@ -1911,14 +1399,20 @@ function openFavorites() {
         document.getElementById('p-title').innerText = title;
         document.getElementById('p-author').innerText = `〔${dyn}〕 ${writer}`;
 
-        let contentStr = cleanClassicalContent(safeConvert(p.content));
-        document.getElementById('p-content-unified').innerHTML = wrapParagraphs(contentStr);
-
         let transStr = removeBrackets(safeConvert(p.translation));
         let remarkStr = safeConvert(p.remark);
         let shangxiStr = removeBrackets(safeConvert(p.shangxi));
 
-        cacheRemark = parseRemarksToTable(remarkStr);
+        // ✨ 執行注釋提取與正文高亮替換
+        let extractedVocabs = extractVocabs(remarkStr);
+        let contentStr = cleanClassicalContent(safeConvert(p.content));
+        let highlightedContent = highlightVocabsInContent(contentStr, extractedVocabs);
+
+        // 將替換好的 HTML 放回 DOM
+        document.getElementById('p-content-unified').innerHTML = wrapParagraphs(highlightedContent);
+
+        // 更新各個面板的快取
+        cacheRemark = parseRemarksToTableFromList(extractedVocabs);
         cacheTranslation = transStr ? `<div class="morandi-text">${wrapParagraphs(transStr)}</div>` : '<div class="empty">卷宗殘缺，暫無譯文</div>';
         cacheShangxi = shangxiStr ? `<div class="morandi-text">${wrapParagraphs(shangxiStr)}</div>` : '<div class="empty">卷宗殘缺，暫無賞析</div>';
 
@@ -1931,6 +1425,7 @@ function openFavorites() {
     function closePoem() {
         stopTTS();
         closePanel();
+        hideVocabTooltip();
         document.getElementById('fab-bar').style.display = 'none';
         showView('view-list');
     }
@@ -1960,30 +1455,25 @@ function openFavorites() {
         }
     }
 
-  // 請找到這段並替換掉
-document.addEventListener('selectionchange', () => {
-    const popup = document.getElementById('search-popup');
-    const selection = window.getSelection();
-    const text = selection.toString().trim();
-    
-    if (text.length > 0 && document.getElementById('view-detail').classList.contains('active')) {
-        lastSelectedText = text;
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
+    document.addEventListener('selectionchange', () => {
+        const popup = document.getElementById('search-popup');
+        const selection = window.getSelection();
+        const text = selection.toString().trim();
         
-        popup.style.display = 'flex';
-        // 確保是絕對定位
-        popup.style.position = 'absolute'; 
-        
-        // 【關鍵修改】：改為 rect.bottom + 10，讓按鈕緊貼在選取文字的「正下方」，避開上方系統選單
-        popup.style.top = (window.pageYOffset + rect.bottom + 10) + 'px';
-        popup.style.left = (window.pageXOffset + rect.left + (rect.width / 2) - 18) + 'px';
-        
-    } else {
-        popup.style.display = 'none';
-        lastSelectedText = "";
-    }
-});
+        if (text.length > 0 && document.getElementById('view-detail').classList.contains('active')) {
+            lastSelectedText = text;
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            
+            popup.style.display = 'flex';
+            popup.style.position = 'absolute'; 
+            popup.style.top = (window.pageYOffset + rect.bottom + 10) + 'px';
+            popup.style.left = (window.pageXOffset + rect.left + (rect.width / 2) - 18) + 'px';
+        } else {
+            popup.style.display = 'none';
+            lastSelectedText = "";
+        }
+    });
 
     function execGoogleSearch(e) {
         if(e) { e.preventDefault(); e.stopPropagation(); }
@@ -1995,74 +1485,7 @@ document.addEventListener('selectionchange', () => {
         }
     }
 
-    function parseRemarksToTable(text) {
-        let safeTitle = currentPoem ? safeConvert(currentPoem.title) : '未知';
-        
-        let lines = text.split(/\r?\n/);
-        let tableHtml = `<table class="remark-table">
-            <thead>
-                <tr>
-                    <th width="10%">序號</th>
-                    <th width="20%" style="text-align:center;">字/詞/句</th>
-                    <th>解析</th>
-                    <th width="15%" style="text-align:center;">收藏</th>
-                </tr>
-            </thead>
-            <tbody>`;
-        
-        let serialCount = 1;
-        
-        lines.forEach(line => {
-            if (!line.trim()) return;
-            
-            let pureLine = line.trim().replace(/^([\[\(【（]?\d+[\]\)】）]?|[①-⑳])\s*[.:：]?\s*/, '');
-            if (!pureLine) return;
-
-            let vocab = '-';
-            let exp = pureLine;
-
-            let bracketMatch = pureLine.match(/^[【\[]([^】\]]+)[】\]]\s*(.*)$/);
-            if (bracketMatch) {
-                vocab = bracketMatch[1].trim();
-                exp = bracketMatch[2].trim();
-            } else {
-                let splitMatch = pureLine.match(/^([^：:——]{1,15})[：:——]\s*(.*)$/);
-                if (splitMatch) {
-                    vocab = splitMatch[1].trim();
-                    exp = splitMatch[2].trim();
-                }
-            }
-            
-            vocab = removeBrackets(vocab);
-            exp = removeBrackets(exp);
-
-            if(!vocab) return; 
-
-            let vocabHtml = vocab !== '-' ? `<span class="vocab-badge">${vocab}</span>` : `<span style="color:var(--ink-gray)">-</span>`;
-            let isSaved = savedVocabs.some(v => v.vocab === vocab && v.title === safeTitle);
-            let heartSvg = isSaved 
-                ? `<svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--cinnabar-red)" stroke-width="2" fill="var(--cinnabar-red)"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`
-                : `<svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--ink-gray)" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
-
-            let safeVocabStr = encodeURIComponent(vocab);
-            let safeExpStr = encodeURIComponent(exp);
-
-            tableHtml += `<tr>
-                <td class="r-idx">${serialCount}.</td>
-                <td style="text-align:center;">${vocabHtml}</td>
-                <td>${exp}</td>
-                <td style="text-align:center; vertical-align:middle;">
-                    <button class="btn-vocab-save" onclick="toggleVocab('${safeVocabStr}', '${safeExpStr}', this)" title="收藏此詞解">
-                        ${heartSvg}
-                    </button>
-                </td>
-            </tr>`;
-            serialCount++;
-        });
-        tableHtml += '</tbody></table>';
-        return tableHtml;
-    }
-
+    // 改寫：更新本機資料庫並同步所有快取 UI (Tooltip / 側邊面板)
     function toggleVocab(encVocab, encExp, btn) {
         let vocab = decodeURIComponent(encVocab);
         let exp = decodeURIComponent(encExp);
@@ -2079,11 +1502,24 @@ document.addEventListener('selectionchange', () => {
             btn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--cinnabar-red)" stroke-width="2" fill="var(--cinnabar-red)"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>`;
         }
         localStorage.setItem('guwen_vocabs', JSON.stringify(savedVocabs));
+
+        // ✨ 即時同步側邊欄快取：如果在打開狀態，直接重新渲染表格
+        if (currentPoem) {
+            let extractedVocabs = extractVocabs(safeConvert(currentPoem.remark));
+            cacheRemark = parseRemarksToTableFromList(extractedVocabs);
+            
+            const panelTitle = document.getElementById('panel-title').innerText;
+            const panel = document.getElementById('overlay-panel');
+            if (panel.classList.contains('open') && panelTitle === '注釋解析') {
+                document.getElementById('panel-body').innerHTML = cacheRemark;
+            }
+        }
     }
 
     function openVocabBook() {
         closePanel();
         stopTTS();
+        hideVocabTooltip();
         renderVocabBook();
         showView('view-vocab');
     }
@@ -2123,6 +1559,7 @@ document.addEventListener('selectionchange', () => {
     }
 
     function openPanel(type) {
+        hideVocabTooltip(); // 開啟側邊欄時自動隱藏懸浮窗
         const panel = document.getElementById('overlay-panel');
         const title = document.getElementById('panel-title');
         const body = document.getElementById('panel-body');
@@ -2153,9 +1590,9 @@ document.addEventListener('selectionchange', () => {
         document.getElementById(viewId).classList.add('active');
     }
 
-    /* --- AI 智能出卷功能 --- */
     function openQuizModal() {
         if(!currentPoem) return;
+        hideVocabTooltip();
         document.getElementById('quiz-modal').classList.add('active');
     }
 
@@ -2206,9 +1643,7 @@ document.addEventListener('selectionchange', () => {
             window.open('https://gemini.google.com/app', '_blank');
             closeQuizModal();
         }).catch(err => {
-            // 如果瀏覽器封鎖了剪貼簿權限的 fallback
             alert('系統複製失敗，請手動複製以下指令：\n\n' + prompt);
-            console.log(prompt);
         });
     }
 
@@ -2227,6 +1662,7 @@ document.addEventListener('selectionchange', () => {
             stopTTS();
         } else {
             if (!currentPoem) return;
+            // 替換掉 HTML tag (如 Tooltip span)，只讀純文字
             let rawContent = removeBrackets(cleanClassicalContent(safeConvert(currentPoem.content)));
             let textToRead = safeConvert(currentPoem.title) + "。" + 
                              safeConvert(currentPoem.writer) + "。" + 
