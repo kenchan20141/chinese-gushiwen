@@ -272,24 +272,42 @@
   /* =========================================
            ✨ 終極折衷方案：純 CSS 渲染信箋質感 (極致流暢且美觀)
            ========================================= */
-    /* =========================================
-           ✨ 極致流暢版：純色宣紙底 (0 效能消耗)
-           ========================================= */
         .article-wrap {
-            background-color: #f7f1e3; /* 溫潤的單一宣紙底色 */
+            /* 1. 溫潤典雅的宣紙底色 */
+            background-color: #f7f1e3; 
+            
+            background-image: 
+                /* 2. 模擬歲月痕跡：四周微微泛黃的暗角 (極低效能消耗) */
+                radial-gradient(circle at 50% 50%, transparent 60%, rgba(140, 100, 50, 0.08) 150%),
+                /* 3. 模擬竹簾紋理：細緻的等距橫紋 (純 CSS 渲染，0 負擔) */
+                repeating-linear-gradient(to bottom, transparent, transparent 4px, rgba(140, 100, 50, 0.04) 4px, rgba(140, 100, 50, 0.04) 5px),
+                /* 4. 光澤漸層：增加紙張整體的立體感與溫度 */
+                linear-gradient(145deg, rgba(255, 255, 255, 0.6) 0%, rgba(200, 170, 120, 0.1) 100%);
+            
+            /* 將多層色彩柔和疊加 */
+            background-blend-mode: multiply;
+            
+            /* 古典雅緻的雙層古籍邊框 */
             border: 1px solid #dcd1be; 
             outline: 1px solid #dcd1be;
             outline-offset: -8px; 
             padding: 50px 40px; 
             margin: 20px auto 80px auto;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.06); /* 僅保留柔和外陰影，移除所有內陰影 */
+            
+            /* 輕度溫和的紙張邊緣內陰影與外陰影 */
+            box-shadow: 
+                inset 0 0 40px rgba(160, 120, 60, 0.05), 
+                0 8px 25px rgba(0,0,0,0.05);
             border-radius: 2px;
         }
 
+        /* 針對手機版微調邊距，保持版面精緻 */
         @media (max-width: 849px) {
-            .article-wrap { padding: 30px 20px; outline-offset: -4px; }
+            .article-wrap { 
+                padding: 30px 20px; 
+                outline-offset: -4px; 
+            }
         }
-    
         .p-title { text-align: center; font-size: 2.4em; margin-bottom: 5px; font-weight: bold; letter-spacing: 3px; }
         .p-author { text-align: center; color: var(--ink-gray); margin-bottom: 20px; font-size: 1.2em; letter-spacing: 2px; }
         
@@ -297,15 +315,7 @@
         .progress-bar-bg { background: rgba(0,0,0,0.1); border-radius: 10px; height: 6px; overflow: hidden; position: relative; }
         .progress-bar-fill { background: var(--cinnabar-red); height: 100%; width: 0%; transition: width 0.2s ease; }
 
-     /* =========================================
-           ✨ 極致流暢版：移除紅底行線 (烏絲欄)，改為純淨排版
-           ========================================= */
-        .content-area {
-            font-size: 1.45em; 
-            line-height: 2.2em; 
-            letter-spacing: 2px;
-            /* 已徹底刪除 background-image 的紅色橫線，大幅釋放手機效能 */
-        }
+        .content-area { font-size: 1.45em; line-height: 1.8; margin-bottom: 30px; }
         
         /* 統一文字縮排與莫蘭迪段落顏色循環 */
         .morandi-text p {
@@ -589,7 +599,11 @@
         }
         .p-author { text-align: center; color: var(--ink-gray); font-size: 1.15em; letter-spacing: 4px; margin-bottom: 45px; }
 
-     
+        .content-area {
+            font-size: 1.45em; line-height: 2.2em; letter-spacing: 2px;
+            background-image: repeating-linear-gradient(to bottom, transparent, transparent calc(2.2em - 1px), rgba(167, 51, 34, 0.15) calc(2.2em - 1px), rgba(167, 51, 34, 0.15) 2.2em);
+            background-size: 100% 2.2em; background-position: top left; padding-top: 0.1em;
+        }
 
         .article-wrap .morandi-text p {
             text-indent: 2em; margin: 0 0 2.2em 0; text-align: justify; text-justify: inter-ideograph;
