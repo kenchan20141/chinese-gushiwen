@@ -634,7 +634,8 @@
     </div>
 </div>
 
-<div id="search-popup" onmousedown="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
+<!-- 找到這行並加上 ontouchstart="execGoogleSearch(event)" -->
+<div id="search-popup" onmousedown="execGoogleSearch(event)" ontouchstart="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
 </div>
 
@@ -1862,23 +1863,30 @@ function openFavorites() {
         }
     }
 
-    document.addEventListener('selectionchange', () => {
-        const popup = document.getElementById('search-popup');
-        const selection = window.getSelection();
-        const text = selection.toString().trim();
+  // 請找到這段並替換掉
+document.addEventListener('selectionchange', () => {
+    const popup = document.getElementById('search-popup');
+    const selection = window.getSelection();
+    const text = selection.toString().trim();
+    
+    if (text.length > 0 && document.getElementById('view-detail').classList.contains('active')) {
+        lastSelectedText = text;
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
         
-        if (text.length > 0 && document.getElementById('view-detail').classList.contains('active')) {
-            lastSelectedText = text;
-            const range = selection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            popup.style.display = 'flex';
-            popup.style.top = (window.pageYOffset + rect.top - 45) + 'px';
-            popup.style.left = (window.pageXOffset + rect.left + (rect.width / 2) - 18) + 'px';
-        } else {
-            popup.style.display = 'none';
-            lastSelectedText = "";
-        }
-    });
+        popup.style.display = 'flex';
+        // 確保是絕對定位
+        popup.style.position = 'absolute'; 
+        
+        // 【關鍵修改】：改為 rect.bottom + 10，讓按鈕緊貼在選取文字的「正下方」，避開上方系統選單
+        popup.style.top = (window.pageYOffset + rect.bottom + 10) + 'px';
+        popup.style.left = (window.pageXOffset + rect.left + (rect.width / 2) - 18) + 'px';
+        
+    } else {
+        popup.style.display = 'none';
+        lastSelectedText = "";
+    }
+});
 
     function execGoogleSearch(e) {
         if(e) { e.preventDefault(); e.stopPropagation(); }
