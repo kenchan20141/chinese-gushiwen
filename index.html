@@ -357,9 +357,18 @@
                 transform: translateX(100%);
             }
             .overlay-panel.open { transform: translateX(0); }
-            body.panel-open .book-container { 
-                transform: translateX(calc( -1 * (var(--panel-width) / 2 - 20px) )); 
-            }
+             /* 1. 取消平移，改為動態計算剩餘寬度並壓縮正文 */
+    body.panel-open .book-container { 
+        transform: none; 
+        margin-left: 2vw;
+        margin-right: calc(var(--panel-width) + 2vw);
+        max-width: calc(100vw - var(--panel-width) - 4vw);
+    }
+    
+    /* 2. 新增：讓底部的「注釋/譯文/賞析」懸浮按鈕，也能完美對齊剩餘空間的中心 */
+    body.panel-open .fab-bar {
+        left: calc((100vw - var(--panel-width)) / 2);
+    }
             .panel-resizer {
                 position: absolute; top: 0; left: -5px; bottom: 0; width: 10px; cursor: ew-resize; z-index: 1002;
             }
