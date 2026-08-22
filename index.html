@@ -359,16 +359,21 @@
             opacity: 0.8; background-color: var(--cinnabar-red);
         }
 
-        @media (min-width: 850px) {
+      @media (min-width: 850px) {
+            /* 加入平滑的空間壓縮過渡 */
+            body { transition: padding-right 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+            
             .overlay-panel {
                 top: 0; right: 0; bottom: 0; width: var(--panel-width);
                 border-left: 2px solid var(--border-line);
                 transform: translateX(100%);
             }
             .overlay-panel.open { transform: translateX(0); }
-            body.panel-open .book-container { 
-                transform: translateX(calc( -1 * (var(--panel-width) / 2 - 20px) )); 
-            }
+            
+            /* 【對讀優化】展開面板時，讓出右側空間，原文在左側自動重新排版，絕不遮擋 */
+            body.panel-open { padding-right: var(--panel-width); }
+            body.panel-open .book-container { transform: none; }
+            
             .panel-resizer {
                 position: absolute; top: 0; left: -5px; bottom: 0; width: 10px; cursor: ew-resize; z-index: 1002;
             }
@@ -1768,6 +1773,16 @@ function closeIframeModal() {
         panel.classList.add('open');
         document.body.classList.add('panel-open');
         body.scrollTop = 0;
+
+        // === 【對讀優化】手機版防遮擋機制 ===
+        // 面板從底部彈出時，將畫面平滑向上捲動面板的高度，把原文推到上半部可視區
+        if (window.innerWidth < 850) {
+            setTimeout(() => {
+                const panelHeight = panel.offsetHeight;
+                // 扣除 60px 緩衝，讓原本在看的那行字剛好停在面板邊緣上方
+                window.scrollBy({ top: panelHeight - 60, behavior: 'smooth' }); 
+            }, 50); // 給予 CSS 過渡啟動的時間
+        }
     }
 
     function closePanel() {
