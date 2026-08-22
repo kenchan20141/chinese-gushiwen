@@ -629,6 +629,31 @@
 }
 
 
+        /* === Gemini 輸出選擇卡片 UI 樣式 === */
+        .gemini-ui-grid { display: grid; gap: 10px; margin-bottom: 20px; }
+        .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        
+        .gemini-ui-card {
+            background: rgba(255,255,255,0.5); border: 2px solid var(--border-line); border-radius: 8px; padding: 15px 5px;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            cursor: pointer; transition: all 0.2s ease; color: var(--ink-gray); font-family: var(--font-book);
+        }
+        .gemini-ui-card:hover { border-color: var(--cinnabar-red); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .gemini-ui-card.active {
+            background: rgba(255,255,255,0.9); border-color: var(--cinnabar-red); color: var(--cinnabar-red); font-weight: bold;
+            box-shadow: 0 4px 12px rgba(167, 51, 34, 0.15);
+        }
+        .gemini-ui-card svg { width: 24px; height: 24px; stroke: currentColor; transition: all 0.2s; }
+        .gemini-ui-card.active svg { transform: scale(1.1); stroke-width: 2.5; }
+        
+        .btn-magic {
+            width: 100%; padding: 12px; background-color: var(--cinnabar-red); color: var(--paper-bg);
+            border: none; border-radius: 6px; font-size: 1.1rem; cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; letter-spacing: 2px;
+        }
+        .btn-magic:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(167, 51, 34, 0.3); }
+
+
         
     </style>
 </head>
@@ -758,30 +783,56 @@
     <div id="panel-body" class="panel-body"></div>
 </div>
 
+<!-- 出題面板 Modal (Gemini 升級版) -->
 <div id="quiz-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>練習</h3>
-            <button class="panel-close" onclick="closeQuizModal()">×</button>
+    <div class="modal-content" style="width: 90%; max-width: 480px; padding: 25px; box-sizing: border-box; display: flex; flex-direction: column;">
+        
+        <!-- 標題列 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px dashed var(--border-line); padding-bottom: 10px;">
+            <span style="color: var(--ink-black); font-size: 1.3rem; font-weight: bold; letter-spacing: 2px;">AI 智能出題</span>
+            <button onclick="closeQuizModal()" style="background: transparent; border: none; font-size: 1.5rem; color: var(--ink-gray); cursor: pointer; padding: 0;">&times;</button>
         </div>
-        <div class="modal-body">
+
+        <!-- 題型設定區 (保留你原本的功能) -->
+        <label style="color: var(--ink-black); font-size: 1.05rem; font-weight: bold; margin-bottom: 10px;">設定題型與數量</label>
+        <div style="background: rgba(0,0,0,0.03); padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border-line);">
             <div class="quiz-option">
-                <label><input type="checkbox" id="chk-mc" checked> 多項選擇題 (MC)</label>
+                <label><input type="checkbox" id="chk-mc" checked> 多項選擇題</label>
                 <div><input type="number" id="num-mc" value="5" min="0" max="20"> 題</div>
             </div>
             <div class="quiz-option">
                 <label><input type="checkbox" id="chk-trans" checked> 語譯題</label>
                 <div><input type="number" id="num-trans" value="3" min="0" max="10"> 題</div>
             </div>
-            <div class="quiz-option">
+            <div class="quiz-option" style="margin-bottom: 0;">
                 <label><input type="checkbox" id="chk-qa" checked> 長問答</label>
                 <div><input type="number" id="num-qa" value="3" min="0" max="10"> 題</div>
             </div>
         </div>
-        <div class="modal-footer">
-            <button class="icon-btn" onclick="closeQuizModal()">取消</button>
-            <button class="icon-btn btn-danger" onclick="generateQuizPrompt()">出題</button>
+
+        <!-- 輸出格式 (神思卡片風格) -->
+        <label style="color: var(--ink-black); font-size: 1.05rem; font-weight: bold; margin-bottom: 10px;">輸出格式</label>
+        <div class="gemini-ui-grid grid-3" style="margin-bottom: 25px;">
+            <div class="gemini-ui-card active" onclick="selectQuizOutputMode('docx', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><text x="8" y="16" font-family="sans-serif" font-size="7" font-weight="bold" stroke="none" fill="currentColor">DOC</text></svg>
+                <span style="font-size: 0.85rem;">DOCX</span>
+            </div>
+            <div class="gemini-ui-card" onclick="selectQuizOutputMode('html', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                <span style="font-size: 0.85rem;">HTML</span>
+            </div>
+            <div class="gemini-ui-card" onclick="selectQuizOutputMode('text', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span style="font-size: 0.85rem;">純文字</span>
+            </div>
         </div>
+        <input type="hidden" id="quizOutputModeVal" value="docx">
+
+        <!-- 提交按鈕 -->
+        <button onclick="generateQuizPrompt()" class="btn-magic">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            複製指令並跳轉
+        </button>
     </div>
 </div>
 
@@ -1739,6 +1790,15 @@ function closeIframeModal() {
         document.getElementById('quiz-modal').classList.remove('active');
     }
 
+   // === 新增：控制出題輸出模式卡片的切換 ===
+    function selectQuizOutputMode(mode, el) {
+        document.getElementById('quizOutputModeVal').value = mode;
+        const cards = el.parentElement.querySelectorAll('.gemini-ui-card');
+        cards.forEach(card => card.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    // === 替換：更新後的出題指令生成邏輯 ===
     function generateQuizPrompt() {
         let chkMC = document.getElementById('chk-mc').checked;
         let numMC = document.getElementById('num-mc').value;
@@ -1746,12 +1806,14 @@ function closeIframeModal() {
         let numTrans = document.getElementById('num-trans').value;
         let chkQA = document.getElementById('chk-qa').checked;
         let numQA = document.getElementById('num-qa').value;
+        let outputMode = document.getElementById('quizOutputModeVal').value;
 
         if (!chkMC && !chkTrans && !chkQA) {
             alert('請至少勾選一種題型！');
             return;
         }
 
+        // --- 你原本的核心 Prompt 完全不變 ---
         let prompt = `你是一位香港 DSE 中國語文科的資深權威名師及閱卷員。請根據以下古文篇章，為我出具一份DSE閱讀理解練習卷，出題用詞、方向、形式等都必須參照真實的DSE中文卷一。\n\n`;
         prompt += `篇章：《${safeConvert(currentPoem.title)}》\n`;
         prompt += `作者：${safeConvert(currentPoem.writer)}\n`;
@@ -1777,10 +1839,83 @@ function closeIframeModal() {
 7. 表格化排版：長問答的標準答案請強制使用「表格」形式呈現，每一獨立論點生成一個獨立表格。表格欄位強制為：【主題句】、【文本依據/概括】、【闡釋】，以最嚴謹的方式展示滿分答案的結構。`;
         }
 
+        // --- 根據選擇的模式加入神思風格的輸出控制指令 ---
+        if (outputMode === 'html') {
+            prompt += `\n\n# HTML Output Generation
+**你必須使用 Python 輸出 HTML 實體檔案代碼。**
+
+### HTML 檔案內容模板 (為符合文言特訓審美，請套用此宣紙排版)：
+請在 Python 代碼中宣告一個包含以下完整結構的字串，並保存為 HTML 檔案：
+
+\`\`\`html
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+   <meta charset="UTF-8">
+   <title>《${safeConvert(currentPoem.title)}》閱讀理解練習</title>
+   <style>
+       body { font-family: "STFangsong", "FangSong", "Kaiti TC", serif; background-color: #f4ecd8; color: #2b2b2b; padding: 20px; max-width: 900px; margin: 0 auto; line-height: 1.8; font-size: 1.2rem; }
+       h1 { text-align: center; color: #a73322; letter-spacing: 4px; border-bottom: 2px solid #a73322; padding-bottom: 15px; margin-bottom: 30px; }
+       h2, h3 { color: #a73322; margin-top: 30px; }
+       .box { background: #faf4e3; border: 1px solid #4a4a4a; outline: 2px solid #4a4a4a; outline-offset: -6px; padding: 40px; margin-bottom: 30px; border-radius: 2px; }
+       .question-item { margin-bottom: 25px; }
+       table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; }
+       th, td { border: 1px solid #4a4a4a; padding: 12px; text-align: left; }
+       th { background-color: #e2d9c4; color: #4a4a4a; }
+   </style>
+</head>
+<body>
+   <h1>《${safeConvert(currentPoem.title)}》閱讀理解特訓</h1>
+   
+   <div class="box">
+       <h2>一、 閱讀理解題目</h2>
+       <!-- 在此輸出你設計的 MC、語譯及長問答題目 -->
+   </div>
+
+   <div class="box">
+       <h2>二、 評分參考及標準答案</h2>
+       <!-- 在此輸出標準答案，長問答必須依要求以嚴謹的表格呈現 -->
+   </div>
+</body>
+</html>
+\`\`\`
+
+不要輸出「.py」的檔案，必須輸出單一的「.html」的檔案。必須為HTML工具，並用code execution產出代碼。
+不要輸出「.py」的檔案，必須輸出單一的「.html」的檔案。必須為HTML工具，並用code execution產出代碼。
+不要輸出「.py」的檔案，必須輸出單一的「.html」的檔案。必須為HTML工具，並用code execution產出代碼。`;
+
+        } else if (outputMode === 'docx') {
+            prompt += `\n\n# Python DOCX Output Generation (生成實體檔案最高指令)
+**你絕對不可以直接在對話框把大段題目印出來。你必須使用 \`Advanced Data Analysis\` (Code Interpreter) 工具，在後台 \`Execute\` \`python-docx\` 邏輯，將文件保存至 \`/mnt/data/worksheet.docx\`，然後把【檔案下載連結】給用戶！**
+
+### DOCX 檔案內容排版要求：
+1. 大標題：文言特訓：《${safeConvert(currentPoem.title)}》閱讀理解
+2. 第一部分：「一、 閱讀理解題目」
+3. 必須強制分頁 (Page Break)：在題目印完後，使用 \`document.add_page_break()\`。
+4. 第二部分：「二、 評分參考及標準答案」
+5. 長問答的標準答案必須使用 Word 內建表格 (Table) 呈現。
+
+不要輸出「.py」的檔案，必須直接輸出.DOCX檔
+不要輸出「.py」的檔案，必須直接輸出.DOCX檔
+不要輸出「.py」的檔案，必須直接輸出.DOCX檔`;
+
+        } else {
+            prompt += `\n\n# 文字輸出指令
+**請直接在對話框中以純文字/Markdown格式輸出。**
+排版必須分為「一、 閱讀理解題目」與「二、 評分參考及標準答案」兩大部分。`;
+        }
+
+        // --- 複製到剪貼簿並跳轉 (引入防擋機制) ---
         navigator.clipboard.writeText(prompt).then(() => {
-            alert('已成功編寫指令！\n\n即將為您開啟 Gemini，請直接貼上指令並送出。');
-            window.open('https://gemini.google.com/app', '_blank');
-            closeQuizModal();
+            closeQuizModal(); // 關閉彈窗
+            
+            // 針對蘋果設備強制使用同頁跳轉 (神思跳轉邏輯)
+            const isAppleDevice = /Macintosh|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (isAppleDevice) {
+                window.location.href = "https://gemini.google.com/app";
+            } else {
+                window.open("https://gemini.google.com/app", "_blank");
+            }
         }).catch(err => {
             alert('系統複製失敗，請手動複製以下指令：\n\n' + prompt);
         });
