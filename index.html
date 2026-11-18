@@ -762,7 +762,7 @@
     </div>
 </div>
 
-<div id="search-popup" onmousedown="execGoogleSearch(event)" ontouchstart="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
+<div id="search-popup" onmousedown="prepareGoogleSearch(event)" ontouchstart="prepareGoogleSearch(event)" onclick="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
 </div>
 
@@ -888,6 +888,8 @@
     let cacheTranslation = '';
     let cacheShangxi = '';
     let lastSelectedText = "";
+    let pendingSearchText = "";
+    let isSearchingClick = false;
 
     let savedWidth = localStorage.getItem('panel-width') || '450px';
     let savedHeight = localStorage.getItem('panel-height') || '40vh';
@@ -1630,6 +1632,7 @@
     }
 
     document.addEventListener('selectionchange', () => {
+        if (isSearchingClick) return;
         const popup = document.getElementById('search-popup');
         const selection = window.getSelection();
         const text = selection.toString().trim();
@@ -1649,29 +1652,55 @@
         }
     });
 
-   // 替換原本的 execGoogleSearch 函式
+    function prepareGoogleSearch(e) {
+        if (e && e.type === 'mousedown') {
+            e.preventDefault();
+        }
+        if (lastSelectedText) {
+            pendingSearchText = lastSelectedText;
+        }
+        isSearchingClick = true;
+        setTimeout(() => { isSearchingClick = false; }, 500);
+    }
+
+   // 使用獨立浮動小視窗開啟 Google 搜尋，避免 iframe 與 &igu=1 限制導致 Google AI 模式無法啟動
 function execGoogleSearch(e) {
     if(e) { e.preventDefault(); e.stopPropagation(); }
-    if(lastSelectedText) {
-        // 抓取彈窗的元素
-        const modal = document.getElementById('iframe-modal');
-        const iframe = document.getElementById('search-iframe');
-        const title = document.getElementById('iframe-title');
-        
-        // 更新標題
-        title.innerText = `Google 搜尋：「${lastSelectedText}」`;
-        
-        // 保持你要求的 Google 搜尋，並加上 &igu=1 參數防止 Google 阻擋 iframe
-        const searchUrl = 'https://www.google.com/search?igu=1&q=' + encodeURIComponent(`「${lastSelectedText}」 意思`);
-        
-        // 載入網址並開啟彈窗
-        iframe.src = searchUrl;
-        modal.classList.add('active');
+    const queryText = pendingSearchText || lastSelectedText;
+    if(queryText) {
+        // 移除 &igu=1，使用標準 Google 搜尋網址以完整支援 Google AI 模式與登入狀態
+        const searchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(`「${queryText}」 意思`);
+
+        // 計算置中浮動小視窗位置與尺寸
+        const w = Math.min(820, Math.floor(window.screen.availWidth * 0.9));
+        const h = Math.min(720, Math.floor(window.screen.availHeight * 0.85));
+        const screenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+        const screenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+        const outerW = window.outerWidth || window.screen.availWidth;
+        const outerH = window.outerHeight || window.screen.availHeight;
+        const left = Math.max(0, Math.floor(screenLeft + (outerW - w) / 2));
+        const top = Math.max(0, Math.floor(screenTop + (outerH - h) / 2));
+        const features = `popup=yes,width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`;
+
+        const popupWin = window.open(searchUrl, 'googleSearchPopup', features);
+        if (popupWin) {
+            popupWin.focus();
+        } else {
+            // 若瀏覽器阻擋彈出式視窗，退回內嵌視窗
+            const modal = document.getElementById('iframe-modal');
+            const iframe = document.getElementById('search-iframe');
+            const title = document.getElementById('iframe-title');
+            title.innerText = `Google 搜尋：「${queryText}」`;
+            iframe.src = 'https://www.google.com/search?igu=1&q=' + encodeURIComponent(`「${queryText}」 意思`);
+            modal.classList.add('active');
+        }
         
         // 隱藏反白狀態與懸浮按鈕
         window.getSelection().removeAllRanges();
         document.getElementById('search-popup').style.display = 'none';
         lastSelectedText = "";
+        pendingSearchText = "";
+        isSearchingClick = false;
     }
 }
 
