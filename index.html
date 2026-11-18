@@ -744,7 +744,10 @@
                     <button class="icon-btn" onclick="openQuizModal()" title="AI 智能出題 (Gemini)">
                         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
-              
+                    <!-- 加入最愛按鈕 -->
+                    <button id="btn-toggle-fav" class="icon-btn" onclick="toggleCurrentFavorite()" title="加入最愛">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    </button>
                 </div>
             </div>
             <div id="progress-wrapper" class="progress-wrapper"><div class="progress-bar-bg"><div id="progress-bar-fill" class="progress-bar-fill"></div></div></div>
@@ -759,7 +762,7 @@
     </div>
 </div>
 
-<div id="search-popup" onmousedown="execGoogleSearch(event)" ontouchstart="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
+<div id="search-popup" onmousedown="prepareGoogleSearch(event)" ontouchstart="prepareGoogleSearch(event)" onclick="execGoogleSearch(event)" style="display: none; position: absolute; z-index: 2000; background: var(--ink-black); color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); align-items: center; justify-content: center;">
     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
 </div>
 
@@ -853,7 +856,7 @@
             <button class="panel-close" onclick="closeIframeModal()">×</button>
         </div>
         <div class="iframe-modal-body">
-            <iframe id="search-iframe" src="" title="Google Search" referrerpolicy="no-referrer"></iframe>
+            <iframe id="search-iframe" src="" title="Google Search"></iframe>
         </div>
     </div>
 </div>
@@ -885,6 +888,8 @@
     let cacheTranslation = '';
     let cacheShangxi = '';
     let lastSelectedText = "";
+    let pendingSearchText = "";
+    let isSearchingClick = false;
 
     let savedWidth = localStorage.getItem('panel-width') || '450px';
     let savedHeight = localStorage.getItem('panel-height') || '40vh';
@@ -1627,6 +1632,7 @@
     }
 
     document.addEventListener('selectionchange', () => {
+        if (isSearchingClick) return;
         const popup = document.getElementById('search-popup');
         const selection = window.getSelection();
         const text = selection.toString().trim();
@@ -1646,30 +1652,55 @@
         }
     });
 
-   // 替換原本的 execGoogleSearch 函式
-// 替換原本的 execGoogleSearch 函式
+    function prepareGoogleSearch(e) {
+        if (e && e.type === 'mousedown') {
+            e.preventDefault();
+        }
+        if (lastSelectedText) {
+            pendingSearchText = lastSelectedText;
+        }
+        isSearchingClick = true;
+        setTimeout(() => { isSearchingClick = false; }, 500);
+    }
+
+   // 使用獨立浮動小視窗開啟 Google 搜尋，避免 iframe 與 &igu=1 限制導致 Google AI 模式無法啟動
 function execGoogleSearch(e) {
     if(e) { e.preventDefault(); e.stopPropagation(); }
-    if(lastSelectedText) {
-        // 抓取彈窗的元素
-        const modal = document.getElementById('iframe-modal');
-        const iframe = document.getElementById('search-iframe');
-        const title = document.getElementById('iframe-title');
-        
-        // 更新標題
-        title.innerText = `Google AI 模式：「${lastSelectedText}」`;
-        
-        // 保持 &igu=1 允許 iframe 載入，同時直接帶入 &udm=50 直接啟動 Google AI 模式
-        const searchUrl = 'https://www.google.com/search?igu=1&udm=50&q=' + encodeURIComponent(`「${lastSelectedText}」 意思`);
-        
-        // 載入網址並開啟彈窗
-        iframe.src = searchUrl;
-        modal.classList.add('active');
+    const queryText = pendingSearchText || lastSelectedText;
+    if(queryText) {
+        // 移除 &igu=1，使用標準 Google 搜尋網址以完整支援 Google AI 模式與登入狀態
+        const searchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(`「${queryText}」 意思`);
+
+        // 計算置中浮動小視窗位置與尺寸
+        const w = Math.min(820, Math.floor(window.screen.availWidth * 0.9));
+        const h = Math.min(720, Math.floor(window.screen.availHeight * 0.85));
+        const screenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+        const screenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+        const outerW = window.outerWidth || window.screen.availWidth;
+        const outerH = window.outerHeight || window.screen.availHeight;
+        const left = Math.max(0, Math.floor(screenLeft + (outerW - w) / 2));
+        const top = Math.max(0, Math.floor(screenTop + (outerH - h) / 2));
+        const features = `popup=yes,width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`;
+
+        const popupWin = window.open(searchUrl, 'googleSearchPopup', features);
+        if (popupWin) {
+            popupWin.focus();
+        } else {
+            // 若瀏覽器阻擋彈出式視窗，退回內嵌視窗
+            const modal = document.getElementById('iframe-modal');
+            const iframe = document.getElementById('search-iframe');
+            const title = document.getElementById('iframe-title');
+            title.innerText = `Google 搜尋：「${queryText}」`;
+            iframe.src = 'https://www.google.com/search?igu=1&q=' + encodeURIComponent(`「${queryText}」 意思`);
+            modal.classList.add('active');
+        }
         
         // 隱藏反白狀態與懸浮按鈕
         window.getSelection().removeAllRanges();
         document.getElementById('search-popup').style.display = 'none';
         lastSelectedText = "";
+        pendingSearchText = "";
+        isSearchingClick = false;
     }
 }
 
@@ -1841,9 +1872,16 @@ function closeIframeModal() {
         if (chkTrans) prompt += `- 語譯題：${numTrans} 題\n`;
         if (chkQA) prompt += `- 長問答：${numQA} 題\n`;
 
-        prompt += `\n【出卷與排版流程】
+        if (outputMode !== 'html') {
+            prompt += `\n【出卷與排版流程】
 1. 請先展示「整份練習卷的題目」，讓我可以先作答。在題目區塊絕對不要透露任何答案。
 2. 在題目展示完畢後，請給出「標準答案與詳細評分參考」。\n`;
+        } else {
+            prompt += `\n【互動 HTML 練習卷排版原則】
+1. 本練習卷為單一互動式網頁，請將每道題目的作答互動區與其對應的隱藏解析／預設遮蔽標準答案，直接嵌於各自的 .question-item 結構內；切勿在頁面最底另設外露的標準答案區。
+2. 所有多項選擇題 (MC) 必須於選項被點選後，即時判定對錯並展開「答案分析」區塊；所有操作按鍵皆必須保持純圖示簡潔設計，絕不可出現任何文字按鍵。
+3. 所有語譯題與長問答必須提供作答輸入框 (<textarea>)，並預設遮蔽標準答案與評分參考；用家必須先輸入並點擊「提交圖示按鍵」，方可解鎖點擊「揭示圖示按鍵」顯示標準答案。\n`;
+        }
 
         if (chkQA) {
             prompt += `\n【長問答標準答案之嚴格寫作規定】（請在給出長問答答案時，絕對嚴格執行以下 DSE 標準）
@@ -1861,7 +1899,7 @@ function closeIframeModal() {
             prompt += `\n\n# HTML Output Generation
 **你必須使用 Python 輸出 HTML 實體檔案代碼。**
 
-### HTML 檔案內容模板 (為符合文言特訓審美，請套用此宣紙排版)：
+### HTML 檔案內容模板 (為符合文言特訓審美，請嚴格套用此宣紙互動排版，切勿擅自加入文字按鍵)：
 請在 Python 代碼中宣告一個包含以下完整結構的字串，並保存為 HTML 檔案：
 
 \`\`\`html
@@ -1869,15 +1907,43 @@ function closeIframeModal() {
 <html lang="zh-HK">
 <head>
    <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>《${safeConvert(currentPoem.title)}》閱讀理解練習</title>
    <style>
        body { font-family: "STFangsong", "FangSong", "Kaiti TC", serif; background-color: #f4ecd8; color: #2b2b2b; padding: 20px; max-width: 900px; margin: 0 auto; line-height: 1.8; font-size: 1.2rem; }
        h1 { text-align: center; color: #a73322; letter-spacing: 4px; border-bottom: 2px solid #a73322; padding-bottom: 15px; margin-bottom: 30px; }
        h2, h3 { color: #a73322; margin-top: 30px; }
        .box { background: #faf4e3; border: 1px solid #4a4a4a; outline: 2px solid #4a4a4a; outline-offset: -6px; padding: 40px; margin-bottom: 30px; border-radius: 2px; }
-       .question-item { margin-bottom: 25px; }
+       .question-item { margin-bottom: 30px; padding-bottom: 22px; border-bottom: 1px dashed rgba(74, 74, 74, 0.35); }
+       .question-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+       .mc-options { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; }
+       .mc-opt { padding: 10px 15px; border: 1px solid #4a4a4a; border-radius: 4px; background: rgba(255,255,255,0.45); cursor: pointer; transition: all 0.2s; }
+       .mc-opt:hover { background: rgba(255,255,255,0.85); }
+       .mc-opt.correct { background: #e2e8df; border-color: #3d7a60; color: #2e5e49; font-weight: bold; }
+       .mc-opt.wrong { background: #eee3e2; border-color: #a73322; color: #a73322; }
+       .mc-feedback { display: none; margin-top: 12px; padding: 14px 18px; background: rgba(255,255,255,0.68); border-left: 4px solid #4a4a4a; border-radius: 2px; }
+       .mc-feedback.show { display: block; }
+       .mc-feedback.is-correct { border-left-color: #3d7a60; }
+       .mc-feedback.is-wrong { border-left-color: #a73322; }
+       .mc-status { font-weight: bold; margin-bottom: 6px; }
+       .mc-feedback.is-correct .mc-status { color: #3d7a60; }
+       .mc-feedback.is-wrong .mc-status { color: #a73322; }
+       .answer-area { width: 100%; min-height: 95px; padding: 12px 15px; margin-top: 12px; border: 1px solid #4a4a4a; border-radius: 4px; background: rgba(255,255,255,0.55); font-family: inherit; font-size: 1.05rem; line-height: 1.7; color: #2b2b2b; box-sizing: border-box; resize: vertical; }
+       .answer-area:focus { outline: none; border-color: #a73322; background: rgba(255,255,255,0.88); }
+       .answer-area.need-input { border-color: #a73322; box-shadow: 0 0 0 2px rgba(167,51,34,0.15); }
+       .action-bar { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+       .icon-btn { background: transparent; color: #2b2b2b; border: 1px solid #2b2b2b; width: 38px; height: 38px; padding: 0; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: 0.25s; }
+       .icon-btn:hover:not(:disabled) { background: #2b2b2b; color: #f4ecd8; }
+       .icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+       .icon-btn.submitted { background: #3d7a60; border-color: #3d7a60; color: #fff; }
+       .icon-btn.revealed { background: #a73322; border-color: #a73322; color: #fff; }
+       .icon-btn svg { width: 19px; height: 19px; }
+       .std-answer-wrap { position: relative; margin-top: 14px; }
+       .std-answer { padding: 15px 18px; background: rgba(255,255,255,0.68); border-left: 4px solid #a73322; border-radius: 2px; transition: filter 0.3s ease, opacity 0.3s ease; }
+       .std-answer.masked { max-height: 52px; overflow: hidden; filter: blur(8px); opacity: 0.35; user-select: none; pointer-events: none; }
+       .mask-cover { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: rgba(244, 236, 216, 0.45); border: 1px dashed rgba(74, 74, 74, 0.4); border-radius: 2px; color: #5c5c5c; pointer-events: none; }
        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; }
-       th, td { border: 1px solid #4a4a4a; padding: 12px; text-align: left; }
+       th, td { border: 1px solid #4a4a4a; padding: 12px; text-align: left; vertical-align: top; }
        th { background-color: #e2d9c4; color: #4a4a4a; }
    </style>
 </head>
@@ -1886,13 +1952,111 @@ function closeIframeModal() {
    
    <div class="box">
        <h2>一、 閱讀理解題目</h2>
-       <!-- 在此輸出你設計的 MC、語譯及長問答題目 -->
+
+       <!-- 【多項選擇題結構範例】：請依題數生成對應的 .mc-item，data-answer 填入正確選項字母 (A/B/C/D) -->
+       <!--
+       <div class="question-item mc-item" data-answer="B">
+           <div class="q-stem">1. 題幹內容（2分）</div>
+           <div class="mc-options">
+               <div class="mc-opt" data-opt="A" onclick="checkMC(this)">A. 選項一</div>
+               <div class="mc-opt" data-opt="B" onclick="checkMC(this)">B. 選項二</div>
+               <div class="mc-opt" data-opt="C" onclick="checkMC(this)">C. 選項三</div>
+               <div class="mc-opt" data-opt="D" onclick="checkMC(this)">D. 選項四</div>
+           </div>
+           <div class="mc-feedback">
+               <div class="mc-status"></div>
+               <div class="mc-analysis"><strong>答案分析：</strong>詳述各選項為何正確或錯誤，並緊扣原文說明。</div>
+           </div>
+       </div>
+       -->
+
+       <!-- 【語譯題／長問答結構範例】：請依題數生成對應的 .open-item，答案預設遮蔽於 .std-answer.masked 內 -->
+       <!-- 注意：.btn-submit 與 .btn-reveal 必須維持純 SVG 圖示，不可加入任何文字 -->
+       <!--
+       <div class="question-item open-item">
+           <div class="q-stem">題號與題目內容（分數）</div>
+           <textarea class="answer-area" placeholder="請在此輸入你的答案..."></textarea>
+           <div class="action-bar">
+               <button type="button" class="icon-btn btn-submit" onclick="submitOpenQ(this)" title="提交作答" aria-label="提交作答">
+                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+               </button>
+               <button type="button" class="icon-btn btn-reveal" onclick="toggleAnswer(this)" title="揭示／遮蔽標準答案" aria-label="揭示／遮蔽標準答案" disabled>
+                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+               </button>
+           </div>
+           <div class="std-answer-wrap">
+               <div class="std-answer masked">
+                   <!-- 在此放入標準答案與評分參考（長問答必須依規定使用「主題句／文本依據或概括／闡釋」三欄表格呈現） -->
+               </div>
+               <div class="mask-cover">
+                   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+               </div>
+           </div>
+       </div>
+       -->
    </div>
 
-   <div class="box">
-       <h2>二、 評分參考及標準答案</h2>
-       <!-- 在此輸出標準答案，長問答必須依要求以嚴謹的表格呈現 -->
-   </div>
+   <script>
+       function checkMC(el) {
+           var item = el.closest('.mc-item');
+           var correct = (item.getAttribute('data-answer') || '').trim().toUpperCase();
+           var chosen = (el.getAttribute('data-opt') || '').trim().toUpperCase();
+           var opts = item.querySelectorAll('.mc-opt');
+           for (var i = 0; i < opts.length; i++) {
+               opts[i].classList.remove('correct', 'wrong');
+               if ((opts[i].getAttribute('data-opt') || '').trim().toUpperCase() === correct) {
+                   opts[i].classList.add('correct');
+               }
+           }
+           var fb = item.querySelector('.mc-feedback');
+           var st = item.querySelector('.mc-status');
+           fb.classList.remove('is-correct', 'is-wrong');
+           if (chosen === correct) {
+               fb.classList.add('show', 'is-correct');
+               st.textContent = '✓ 回答正確（答案：' + correct + '）';
+           } else {
+               el.classList.add('wrong');
+               fb.classList.add('show', 'is-wrong');
+               st.textContent = '✗ 回答錯誤，你的選擇為 ' + chosen + '，正確答案為 ' + correct;
+           }
+       }
+
+       function submitOpenQ(btn) {
+           var item = btn.closest('.open-item');
+           var textarea = item.querySelector('.answer-area');
+           if (!textarea.value.trim()) {
+               textarea.classList.add('need-input');
+               textarea.placeholder = '請先輸入你的答案後再提交...';
+               textarea.focus();
+               return;
+           }
+           textarea.classList.remove('need-input');
+           btn.classList.add('submitted');
+           var revealBtn = item.querySelector('.btn-reveal');
+           if (revealBtn) {
+               revealBtn.disabled = false;
+           }
+       }
+
+       function toggleAnswer(btn) {
+           if (btn.disabled) return;
+           var item = btn.closest('.open-item');
+           var ans = item.querySelector('.std-answer');
+           var cover = item.querySelector('.mask-cover');
+           var isMasked = ans.classList.contains('masked');
+           if (isMasked) {
+               ans.classList.remove('masked');
+               if (cover) cover.style.display = 'none';
+               btn.classList.add('revealed');
+               btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+           } else {
+               ans.classList.add('masked');
+               if (cover) cover.style.display = 'flex';
+               btn.classList.remove('revealed');
+               btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+           }
+       }
+   <\/script>
 </body>
 </html>
 \`\`\`
@@ -1999,4 +2163,4 @@ function closeIframeModal() {
     }
 </script>
 </body>
-</html>
+    </html>
